@@ -1,3 +1,1 @@
 # MONOPOLY
-
-WE PLAY MONOPOLY!!! 

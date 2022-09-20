@@ -1,0 +1,100 @@
+{
+    "Chance": [
+        {
+            "text": "Give money to every other player",
+            "effect": {
+                "type": "money",
+                "transfer": "out",
+                "affects": "all but self"
+            }
+        },
+        {
+            "text": "All move backwards",
+            "effect": {
+                "type": "movement",
+                "direction": "backwards",
+                "affects": "all"
+            }
+        },
+        {
+            "text": "You have earned a Get out of Jail Free Card",
+            "effect": {
+                "type": "consumable",
+                "affects": "self"
+            }
+        },
+        {
+            "text": "All to jail",
+            "effect": {
+                "type": "movement",
+                "direction": "Jail",
+                "affects": "all"
+            }
+        },
+        {
+            "text": "All move forward",
+            "effect": {
+                "type": "movement",
+                "direction": "forwards",
+                "affects": "all"
+            }
+        },
+        {
+            "text": "Every other player owes you money",
+            "effect": {
+                "type": "money",
+                "transfer": "in",
+                "affects": "all but self"
+            }
+        }
+    ],
+    "Community": [
+        {
+            "text": "To free parking",
+            "effect": {
+                "type": "movement",
+                "direction": "Free Parking",
+                "affects": "self"
+            }
+        },
+        {
+            "text": "Back to Go",
+            "effect": {
+                "type": "movement",
+                "direction": "Backwards GO",
+                "affects": "self"
+            }
+        },
+        {
+            "text": "Give money to the bank",
+            "effect": {
+                "type": "money",
+                "transfer": "out",
+                "affects": "self"
+            }
+        },
+        {
+            "text": "Go to nearest railroad",
+            "effect": {
+                "type": "movement",
+                "direction": "multi",
+                "affects": "self"
+            }
+        },
+        {
+            "text": "Get money from the bank",
+            "effect": {
+                "type": "money",
+                "transfer": "in",
+                "affects": "self"
+            }
+        },
+        {
+            "text": "You have earned a Get out of Jail Free Card",
+            "effect": {
+                "type": "consumable",
+                "affects": "self"
+            }
+        }
+    ]
+}
