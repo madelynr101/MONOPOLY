@@ -4,7 +4,7 @@
             "text": "Give money to every other player",
             "effect": {
                 "type": "money",
-                "transfer": "out",
+                "transfer": "toOtherPlayers",
                 "affects": "all but self"
             }
         },
@@ -27,7 +27,7 @@
             "text": "All to jail",
             "effect": {
                 "type": "movement",
-                "direction": "Jail",
+                "direction": "toJail",
                 "affects": "all"
             }
         },
@@ -43,7 +43,7 @@
             "text": "Every other player owes you money",
             "effect": {
                 "type": "money",
-                "transfer": "in",
+                "transfer": "fromOtherPlayers",
                 "affects": "all but self"
             }
         }
@@ -53,7 +53,7 @@
             "text": "To free parking",
             "effect": {
                 "type": "movement",
-                "direction": "Free Parking",
+                "direction": "freeParking",
                 "affects": "self"
             }
         },
@@ -61,7 +61,7 @@
             "text": "Back to Go",
             "effect": {
                 "type": "movement",
-                "direction": "Backwards GO",
+                "direction": "backToGo",
                 "affects": "self"
             }
         },
@@ -69,7 +69,7 @@
             "text": "Give money to the bank",
             "effect": {
                 "type": "money",
-                "transfer": "out",
+                "transfer": "toBank",
                 "affects": "self"
             }
         },
@@ -77,7 +77,7 @@
             "text": "Go to nearest railroad",
             "effect": {
                 "type": "movement",
-                "direction": "multi",
+                "direction": "toRailroad",
                 "affects": "self"
             }
         },
@@ -85,7 +85,7 @@
             "text": "Get money from the bank",
             "effect": {
                 "type": "money",
-                "transfer": "in",
+                "transfer": "fromBank",
                 "affects": "self"
             }
         },

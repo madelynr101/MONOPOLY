@@ -1,18 +1,18 @@
-import tile  # One of these may or may not be the way of doing it
+import tile
 import random
 
 class Player():
-    def __init__(self):
+    def __init__(self, pieceIn):
         self.money = 0  # The amount of money the player currently has
         self.properties = [] #properties play owns
         self.location = 0  # Index value for the tile the player is currently
         self.getOutOfJailCards = 0  # The number of get out of jail free cards the player currently has
         self.isInJail = False  # Is the player currently in jail
         self.doubleRolls = 0 # Increases whenever the player rolls doubles, set back to zero when they don't 
-        self.piece = 0  # Index of the players piece
+        self.piece = pieceIn  # Index of the players piece
         self.isBankrupt = False  # Is the player currently bankrupt
 
-    #pay another player
+    # pay another player
     def pay(self, landedOn: tile.Property) -> None:
         cost = 0 #wherever we get cost, varies based on propery and houses / hotels
         if self.money >= cost:
@@ -22,15 +22,15 @@ class Player():
             landedOn.owner.getMoney(self.money)
             self.isBankrupt = True
 
-    #simply get money, or send money to bank
-    def getMoney(self, amount: int) -> None:
+    # Get or pay money to the bank
+    def bankTransaction(self, amount: int) -> None:
         self.money += amount
         if (self.money < 0):
             self.isBankrupt = True
         pass
 
     # Simulate dice roll, two random numbers 1-6, mark if doubles, returns the rolled value
-    def roll(self) -> int:
+    def roll(self) -> list[int]:
         diceOne = random.randint(1, 6)
         diceTwo = random.randint(1, 6)
 
@@ -40,15 +40,27 @@ class Player():
         else:
             self.doubleRolls = 0
 
-        return diceOne + diceTwo
+        return [diceOne,diceTwo]
 
     #move a given distance
-    def move(self, distance: int, board: tile.Tile[]):
-        moved = 0
+    def move(self, distance: int, board: list[tile.Tile]):
+        dice = self.roll(self)
+        if self.isInJail:  
+            # TODO Once we have pygame figured out, we need an option to pay $50 to leave jail early
+            # TODO If a player has a get out of jail free card, they can use it to get out of jail 
+            self.escapeJail(self,dice)
+            return
+       
+        moved = dice[0] + dice[1]
         while(moved < distance):
-            self.index = index+1
+            self.index = self.index+1
             if self.index >= len(board):
                 self.index = 0
+                self.bankTransaction(self, 200)
             moved += 1
-        board[index].landedOn(self)
+        board[self.index].landedOn(self)
+        
+    def escapeJail(self, dice: list[int]) -> None:
+        if dice[0] == dice[1]:
+            self.isInJail = False
         

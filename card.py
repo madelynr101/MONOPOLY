@@ -2,31 +2,15 @@ from io import FileIO
 from json import load
 from abc import abstractmethod
 from typing import Union
-from dataclasses import dataclass
-
-@dataclass
-class MoneyFlavor:
-    transfer: str
-
-@dataclass
-class MovementFlavor:
-    direction: str
-
-@dataclass
-class CombinedFlavor:
-    type: str
-    semantics: Union[MovementFlavor, MoneyFlavor, None]
-    affects: str
-
-@dataclass
-class Flavor:
-    text: str
-    effect: CombinedFlavor
+from random import randint
+from cardTypes import *
 
 class Card():
     def __init__(self) -> None:
         self.chanceFlavor: list[Flavor] = []
         self.communityFlavor: list[Flavor] = []
+
+        self.readFlavorFromFile()
 
     def setChanceEffects(self, chance) -> None:
         chanceEffect = chance["effect"]
@@ -75,7 +59,7 @@ class Card():
         pass
 
     @abstractmethod
-    def getRandomAmount(self) -> Union[float, int]:
+    def getRandomAmount(self) -> Union[int, MoveEnum]:
         pass
 
 
@@ -84,23 +68,77 @@ class ChanceCard(Card):
         super().__init__()
 
     def getEffect(self) -> str:
-        pass
+        randomVal: int = randint(0, len(super().chanceFlavor) - 1)
+
+        card: Flavor = super().chanceFlavor[randomVal]
+
+        flavorText: str = self.getRandomFlavorText(card)
+
+        randomAmount: Union[int, MoveEnum, ConsumableCards] = 0
+
+        if card.effect.type == "money":
+            randomAmount = self.getRandomAmount(card.effect.semantics.transfer)
+        elif card.effect.type == "movement":
+            randomAmount = self.getRandomAmount(card.effect.semantics.direction)
+        else:
+            # Can be modified to call getRandomAmount if we desire more consumable cards
+            randomAmount = ConsumableCards.GET_OUT_OF_JAIL_FREE_CARD
+
+    def getRandomFlavorText(self, card: Flavor) -> str:
+        # Should eventually be modified to add in the random amount of movement, money in the text
+        return card.text
     
-    def getRandomFlavorText(self) -> str:
-        pass
-    
-    def getRandomAmount(self) -> Union[float, int]:
-        pass
+    def getRandomAmount(self, type: str) -> Union[int, MoveEnum]:
+        match type:
+            # Money cases
+            case "toOtherPlayers":
+                return randint(1, 3) * 50
+            case "fromOtherPlayers":
+                return randint(1, 3) * 100
+            # Movement cases
+            case "forwards":
+                return randint(1, 6)
+            case "backwards":
+                return randint(1, 6)
+            case "toJail":
+                return MoveEnum.JAIL
 
 class CommunityCard(Card):
     def __init__(self) -> None:
         super().__init__()
 
     def getEffect(self) -> str:
-        pass
+        randomVal: int = randint(0, len(super().communityFlavor) - 1)
+
+        card: Flavor = super().communityFlavor[randomVal]
+
+        flavorText: str = self.getRandomFlavorText(card)
+
+        randomAmount: Union[int, MoveEnum, ConsumableCards] = 0
+
+        if card.effect.type == "money":
+            randomAmount = self.getRandomAmount(card.effect.semantics.transfer)
+        elif card.effect.type == "movement":
+            randomAmount = self.getRandomAmount(card.effect.semantics.direction)
+        else:
+            # Can be modified to call getRandomAmount if we desire more consumable cards
+            randomAmount = ConsumableCards.GET_OUT_OF_JAIL_FREE_CARD
     
-    def getRandomFlavorText(self) -> str:
-        pass
+    def getRandomFlavorText(self, card: Flavor) -> str:
+        # Should eventually be modified to add in the random amount of movement, money in the text
+        return card.text
     
-    def getRandomAmount(self) -> Union[float, int]:
-        pass
+    def getRandomAmount(self) -> Union[int, MoveEnum]:
+        match type:
+            # Money cases
+            case "toBank":
+                return randint(1, 3) * 100
+            case "fromBank":
+                return randint(2, 5) * 100
+            # Movement cases
+            case "freeParking":
+                return MoveEnum.FREE_PARKING
+            case "backToGo":
+                return MoveEnum.BACK_TO_GO
+            case "toRailroad":
+                return MoveEnum.NEAREST_RAILROAD
