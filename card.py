@@ -2,7 +2,7 @@ from io import FileIO
 from json import load
 from abc import abstractmethod
 from typing import Union
-from random import randint
+from random import randint, random
 from cardTypes import *
 
 class Card():
@@ -46,9 +46,10 @@ class Card():
         chance = data["Chance"]
         community = data["Community"]
 
-        for _ in range(len(chance)):
-            self.setChanceEffects(chance)
-            self.setCommunityEffects(community)
+
+        for i in range(len(chance)):
+            self.setChanceEffects(chance[i])
+            self.setCommunityEffects(community[i])
 
     @abstractmethod
     def getEffect(self) -> str:
@@ -68,9 +69,9 @@ class ChanceCard(Card):
         super().__init__()
 
     def getEffect(self) -> str:
-        randomVal: int = randint(0, len(super().chanceFlavor) - 1)
+        randomVal: int = randint(0, len(self.chanceFlavor) - 1)
 
-        card: Flavor = super().chanceFlavor[randomVal]
+        card: Flavor = self.chanceFlavor[randomVal]
 
         flavorText: str = self.getRandomFlavorText(card)
 
@@ -83,9 +84,11 @@ class ChanceCard(Card):
         else:
             # Can be modified to call getRandomAmount if we desire more consumable cards
             randomAmount = ConsumableCards.GET_OUT_OF_JAIL_FREE_CARD
+        
+        # Remove for production build
+        print(f"{flavorText=}, {card.effect.type=}, {randomAmount=}")
 
     def getRandomFlavorText(self, card: Flavor) -> str:
-        # Should eventually be modified to add in the random amount of movement, money in the text
         return card.text
     
     def getRandomAmount(self, type: str) -> Union[int, MoveEnum]:
@@ -108,9 +111,9 @@ class CommunityCard(Card):
         super().__init__()
 
     def getEffect(self) -> str:
-        randomVal: int = randint(0, len(super().communityFlavor) - 1)
+        randomVal: int = randint(0, len(self.communityFlavor) - 1)
 
-        card: Flavor = super().communityFlavor[randomVal]
+        card: Flavor = self.communityFlavor[randomVal]
 
         flavorText: str = self.getRandomFlavorText(card)
 
@@ -123,12 +126,14 @@ class CommunityCard(Card):
         else:
             # Can be modified to call getRandomAmount if we desire more consumable cards
             randomAmount = ConsumableCards.GET_OUT_OF_JAIL_FREE_CARD
+
+        # Remove for production build
+        print(f"{flavorText=}, {card.effect.type=}, {randomAmount=}")
     
     def getRandomFlavorText(self, card: Flavor) -> str:
-        # Should eventually be modified to add in the random amount of movement, money in the text
         return card.text
     
-    def getRandomAmount(self) -> Union[int, MoveEnum]:
+    def getRandomAmount(self, type: str) -> Union[int, MoveEnum]:
         match type:
             # Money cases
             case "toBank":
@@ -142,3 +147,14 @@ class CommunityCard(Card):
                 return MoveEnum.BACK_TO_GO
             case "toRailroad":
                 return MoveEnum.NEAREST_RAILROAD
+
+def main() -> None:
+    for _ in range(10):
+        chanceCard: ChanceCard = ChanceCard()
+        communityCard: CommunityCard = CommunityCard()
+
+        chanceCard.getEffect()
+        communityCard.getEffect()
+
+if __name__ == "__main__": # Driver for testing
+    main()

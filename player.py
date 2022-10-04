@@ -1,5 +1,6 @@
 import tile
 import random
+from typing import List
 
 class Player():
     def __init__(self, pieceIn):
@@ -30,7 +31,7 @@ class Player():
         pass
 
     # Simulate dice roll, two random numbers 1-6, mark if doubles, returns the rolled value
-    def roll(self) -> list[int]:
+    def roll(self) -> List[int]:
         diceOne = random.randint(1, 6)
         diceTwo = random.randint(1, 6)
 
@@ -43,7 +44,7 @@ class Player():
         return [diceOne,diceTwo]
 
     #move a given distance
-    def move(self, distance: int, board: list[tile.Tile]):
+    def move(self, board: List[tile.Tile]):
         dice = self.roll(self)
         if self.isInJail:  
             # TODO Once we have pygame figured out, we need an option to pay $50 to leave jail early
@@ -51,7 +52,8 @@ class Player():
             self.escapeJail(self,dice)
             return
        
-        moved = dice[0] + dice[1]
+        distance = dice[0] + dice[1]
+        moved = 0
         while(moved < distance):
             self.index = self.index+1
             if self.index >= len(board):
@@ -59,8 +61,10 @@ class Player():
                 self.bankTransaction(self, 200)
             moved += 1
         board[self.index].landedOn(self)
+        #TODO: Remove test print
+        print("player " + self.piece + " has reached space " + self.index)
         
-    def escapeJail(self, dice: list[int]) -> None:
+    def escapeJail(self, dice: List[int]) -> None:
         if dice[0] == dice[1]:
             self.isInJail = False
         

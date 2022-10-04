@@ -2,20 +2,18 @@ import card
 import player
 
 class Bank():
-    def __init__(self, numHouses, numHotels, chanceCards, communityCards):
+    def __init__(self, numHouses, numHotels):
         self.numHouses = numHouses            # Number of houses available to players
         self.numHotels = numHotels            # Number of hotels available to players
-        self.chanceCards = chanceCards        # List of chance cards in play
-        self.communityCards = communityCards  # List of community chest cards in play
 
-    def drawChanceCard(self, p: Player) -> None:
+    def drawChanceCard(self, player) -> None:
         pass
 
-    def drawCommunityCard(self, p: Player) -> None:
+    def drawCommunityCard(self, player) -> None:
         pass
 
-    def getHouseCount() -> int:
-        return self.houses
+    def getHouseCount(self) -> int:
+        return self.numHouses
 
-    def getHotelCount() -> int:
-        return self.hotels
+    def getHotelCount(self) -> int:
+        return self.numHotels
