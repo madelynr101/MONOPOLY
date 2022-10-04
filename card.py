@@ -52,7 +52,7 @@ class Card():
             self.setCommunityEffects(community[i])
 
     @abstractmethod
-    def getEffect(self) -> str:
+    def getEffect(self) -> CardReturn:
         pass
 
     @abstractmethod
@@ -63,12 +63,11 @@ class Card():
     def getRandomAmount(self) -> Union[int, MoveEnum]:
         pass
 
-
 class ChanceCard(Card):
     def __init__(self) -> None:
         super().__init__()
 
-    def getEffect(self) -> str:
+    def getEffect(self) -> CardReturn:
         randomVal: int = randint(0, len(self.chanceFlavor) - 1)
 
         card: Flavor = self.chanceFlavor[randomVal]
@@ -85,8 +84,7 @@ class ChanceCard(Card):
             # Can be modified to call getRandomAmount if we desire more consumable cards
             randomAmount = ConsumableCards.GET_OUT_OF_JAIL_FREE_CARD
         
-        # Remove for production build
-        print(f"{flavorText=}, {card.effect.type=}, {randomAmount=}")
+        return CardReturn(flavorText=flavorText, type=card.effect.type, randomAmount=randomAmount)
 
     def getRandomFlavorText(self, card: Flavor) -> str:
         return card.text
@@ -110,7 +108,7 @@ class CommunityCard(Card):
     def __init__(self) -> None:
         super().__init__()
 
-    def getEffect(self) -> str:
+    def getEffect(self) -> CardReturn:
         randomVal: int = randint(0, len(self.communityFlavor) - 1)
 
         card: Flavor = self.communityFlavor[randomVal]
@@ -127,8 +125,7 @@ class CommunityCard(Card):
             # Can be modified to call getRandomAmount if we desire more consumable cards
             randomAmount = ConsumableCards.GET_OUT_OF_JAIL_FREE_CARD
 
-        # Remove for production build
-        print(f"{flavorText=}, {card.effect.type=}, {randomAmount=}")
+        return CardReturn(flavorText=flavorText, type=card.effect.type, randomAmount=randomAmount)
     
     def getRandomFlavorText(self, card: Flavor) -> str:
         return card.text
@@ -153,8 +150,8 @@ def main() -> None:
         chanceCard: ChanceCard = ChanceCard()
         communityCard: CommunityCard = CommunityCard()
 
-        chanceCard.getEffect()
-        communityCard.getEffect()
+        print(chanceCard.getEffect())
+        print(communityCard.getEffect())
 
 if __name__ == "__main__": # Driver for testing
     main()

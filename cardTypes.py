@@ -29,3 +29,9 @@ class CombinedFlavor:
 class Flavor:
     text: str
     effect: CombinedFlavor
+
+@dataclass
+class CardReturn:
+    flavorText: str
+    type: str
+    randomAmount: Union[int, MoveEnum, ConsumableCards]

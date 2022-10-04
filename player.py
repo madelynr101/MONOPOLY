@@ -15,7 +15,7 @@ class Player():
 
     # pay another player
     def pay(self, landedOn: tile.Property) -> None:
-        cost = 0 #wherever we get cost, varies based on propery and houses / hotels
+        cost = landedOn.getRent() #wherever we get cost, varies based on propery and houses / hotels
         if self.money >= cost:
             self.money -= cost
             landedOn.owner.getMoney(cost)
@@ -60,10 +60,26 @@ class Player():
                 self.index = 0
                 self.bankTransaction(self, 200)
             moved += 1
-        board[self.index].landedOn(self)
+        effect = board[self.index].landedOn
+        self.landOnParse(effect)
         #TODO: Remove test print
         print("player " + self.piece + " has reached space " + self.index)
         
+    def landOnParse(self, effect: str) -> None:
+        instructions = effect.split(':')
+        match instructions[0]:
+            case 'Charge':
+                self.bankTransaction(-int(instructions[1]))
+            case 'To':
+                self.location = int(instructions[1])
+            case 'Draw':
+                
+            case 'Pay':
+                self.pay(board[])
+            case 'Purchase':
+                pass
+
+
     def escapeJail(self, dice: List[int]) -> None:
         if dice[0] == dice[1]:
             self.isInJail = False

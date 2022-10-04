@@ -1,6 +1,3 @@
-import card
-import player
-
 class Bank():
     def __init__(self, numHouses, numHotels):
         self.numHouses = numHouses            # Number of houses available to players

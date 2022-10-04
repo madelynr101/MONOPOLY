@@ -1,11 +1,9 @@
 import pygame
-import random
 #from datetime import datetime
 
 # Import backend functions for components of the game.
 import tile
 import player
-import card
 
 # Seeds RNG based off of the computer's internal clock.
 #random.seed(datetime.now())
@@ -66,10 +64,10 @@ while gameRunning:
 
   continue
   
-  for e in pygame.event.get():
-    if e.type == pygame.QUIT:
-      pygame.quit()
-      exit()
+  # for e in pygame.event.get():
+  #   if e.type == pygame.QUIT:
+  #     pygame.quit()
+  #     exit()
 
-  pygame.display.update()
-  clock.tick(60)
+  # pygame.display.update()
+  # clock.tick(60)

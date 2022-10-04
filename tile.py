@@ -1,23 +1,18 @@
 from abc import abstractmethod
-import player
-import card
-
-'''
-obj = Property(1, 50, 20, "Brown")  # Something like this may or may not be correct
-
-'''
+from card import *
+from cardTypes import *
 
 class Tile():
   def __init__(self, index) -> None:
     self.index = index
 
   @abstractmethod
-  def landedOn(self) -> None:
+  def landedOn(self) -> str:
     pass
 
 class Property(Tile):
   def __init__(self, index):
-    super.__init__(self, index)
+    super().__init__(index)
     self.owner = None
     self.cost = 0
     self.rent = 0
@@ -27,26 +22,34 @@ class Property(Tile):
     # self.mortgaged = False
 
   def __init__(self, index, cost, rent, color):
-    super.__init__(self, index)
+    super().__init__(index)
     self.owner = None
     self.cost = cost
     self.rent = rent
     self.color = color
 
-  def landedOn(self, landingPlayer: player) -> None:
+  def landedOn(self, landingPlayer: int) -> str:
+    instructionToReturn = ""
     if self.owner == None:  # If no one owns this property
-      if landingPlayer.money >= self.cost:  # TODO Let players chose if the want to purchase property
-        self.purchase(self, landingPlayer)
-    elif self.owner.piece != landingPlayer.piece:  # Currently player doesn't own the property
-      landingPlayer.pay(self.rent)  # This (in theory) should take the rent from the current player and give it to player whose property it is
+      instructionToReturn = "Purchase:" + self.index  # Player will handle having enough money / if they want to but it
+    elif self.owner != landingPlayer:  # Currently player doesn't own the property
+      instructionToReturn = "Charge:" + self.rent
+
+    return instructionToReturn
 
   # TODO Special cases for railroads
   # TODO Special cases for utilies
 
-  def getRent(self) -> int:
+  def getRent(self) -> int:  # Return the rent value for the current property
     return self.rent
 
-  def purchase(self, landingPlayer: player) -> None:
+  def getOwner(self) -> int:  # Owner is an index value representing one of the players
+    return self.owner
+
+  def setOwner(self, newOwner: int) -> None: # A new player index is assigned to self.owner.
+    self.owner = newOwner
+
+  def purchase(self, landingPlayer: int) -> None:
     landingPlayer.bankTransaction(-self.cost)
 
   # def addHouse(self) -> None:
@@ -54,60 +57,70 @@ class Property(Tile):
 
 
 class Go(Tile):
-  def __init__(self, index) -> None:
-    super.__init__(self, index)
-
-  def landedOn(self, landingPlayer: player) -> None:
-    landingPlayer.bankTransaction(200)  # Player recieves $200
-    # Passing go is handled in the player class
+  def __init__(self, index) -> None:  # Landing on our passing go giving $200 is handle in the move function
+    super().__init__(index)
+  
+  def landedOn(self) -> str:
+    return ''
+    
 
 # Quite literally, does nothing.
 class FreeParking(Tile):
   def __init__(self, index) -> None:
-    super.__init__(self, index)
+    super().__init__(index)
+
+  def landedOn(self) -> str:  # Blank string means doing nothing
+    return ''
 
 class GoToJail(Tile):
   def __init__(self, index) -> None:
-    super.__init__(self, index)
+    super().__init__(index)
 
-  def landedOn(self, landingPlayer: player) -> None:
-    # Sets player location to jail and marks them as in jail
-    landingPlayer.location = self.index - 1
-    landingPlayer.isInJail = True
+  def landedOn(self) -> str:
+    return "To:Jail"
   
 # Does nothing when landed on, jail logic handled by player class.
 class Jail(Tile):
   def __init__(self, index) -> None:
-    super.__init__(self, index)
+    super().__init__(index)
+
+  def landedOn(self) -> str:
+    return ''
 
 class Chance(Tile):
   def __init__(self, index) -> None:
-    super.__init__(self, index)
+    super().__init__(index)
 
-  def landedOn(self, landingPlayer: player) -> None:
-    selectedCard = card.ChanceCard()  # This will draw a radom card
-    selectedCard.getEffect()
+  def landedOn(self) -> str:
+    chaCard: ChanceCard = ChanceCard()
+    effect: CardReturn = chaCard.getEffect()
+
+    # TODO change this to use the card's effect
+    return "Draw:Chance"
 
 class CommunityChest(Tile):
   def __init__(self, index) -> None:
-    super.__init__(self, index)
+    super().__init__(index)
 
-  def landedOn(self, landingPlayer: player) -> None:
-    selectedCard = card.CommunityCard()  # This will draw a radom card
-    selectedCard.getEffect()
+  def landedOn(self) -> str:
+    comCard: CommunityCard = CommunityCard()
+    effect: CardReturn = comCard.getEffect()
+
+    # TODO change this to use the card's effect
+    return "Draw:Chest"
 
 class IncomeTax(Tile):
   def __init__(self, index) -> None:
-    super.__init__(self, index)
+    super().__init__(index)
 
-  def landedOn(self, landingPlayer: player) -> None:
+  def landedOn(self) -> str:
     # Player pays $200 to bank
-    landingPlayer.bankTransaction(-200)  # I do believe this pays $200 to the bank, the pay function is specifically for properties
+    return "Charge:200" # I do believe this pays $200 to the bank, the pay function is specifically for properties
 
 class LuxuryTax(Tile):
   def __init__(self, index) -> None:
-    super.__init__(self, index)
+    super().__init__(index)
 
-  def landedOn(self, landingPlayer: player) -> None:
+  def landedOn(self) -> str:
     # Will require the player to pay $100 to the bank if landed on.
-    landingPlayer.bankTransaction(-100)  # Pay $100 to bank
+    return "Charge:100" # Pay $100 to bank
