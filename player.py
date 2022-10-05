@@ -2,6 +2,8 @@ import tile
 import random
 from typing import List
 
+boardLength=11
+
 class Player():
     def __init__(self, pieceIn):
         self.money = 0  # The amount of money the player currently has
@@ -70,14 +72,30 @@ class Player():
         match instructions[0]:
             case 'Charge':
                 self.bankTransaction(-int(instructions[1]))
-            case 'To':
-                self.location = int(instructions[1])
+            case 'Move':
+                if instructions[1] < 0:
+					for i in range(-instructions[1]):
+						self.index -= 1
+						if self.index < 0:
+							self.index = boardLenght-1
+				else:
+					for i in range(instructions[1]):
+						self.index += 1
+						if self.index >= boardLength:
+							self.index = 0
+							self.bankTransaction(200)
+						
             case 'Draw':
-                
+                pass
             case 'Pay':
-                self.pay(board[])
+                self.pay(board[instructions[1]])
             case 'Purchase':
                 pass
+            case 'ToJail':
+                self.isInJail = True
+				
+            case 'GetOutCard':
+                self.getOutOfJailCards += 1
 
 
     def escapeJail(self, dice: List[int]) -> None:
