@@ -36,7 +36,7 @@ class Property(Tile):
     if self.owner == None:  # If no one owns this property
       instructionToReturn = f"Purchase:{self.index}"  # Player will handle having enough money / if they want to but it
     elif self.owner != landingPlayer:  # Currently player doesn't own the property
-      instructionToReturn = f"Charge:{self.rent}"
+      instructionToReturn = f"Pay:{self.rent}"
 
     return instructionToReturn
 
@@ -51,9 +51,6 @@ class Property(Tile):
 
   def setOwner(self, newOwner: int) -> None: # A new player index is assigned to self.owner.
     self.owner = newOwner
-
-  def purchase(self, landingPlayer: int) -> None:
-    landingPlayer.bankTransaction(-self.cost)
 
   # def addHouse(self) -> None:
   #   pass

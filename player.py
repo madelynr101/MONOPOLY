@@ -24,10 +24,13 @@ class Player():
             self.money -= cost
             self.isBankrupt = True
 
-    # Get or pay money to the bank
+    # Get or pay money to the bank, amount can be positive or negative, with
+    # negative meaning loss of money and positive meaning gain.
     def bankTransaction(self, amount: int) -> None:
-        self.money += amount
-        if (self.money < 0):
+        if(self.money + amount > 0):
+            self.money += amount
+        else:
+            self.money = 0
             self.isBankrupt = True
 
     # Simulate dice roll, two random numbers 1-6, mark if doubles, returns the rolled value
@@ -41,7 +44,7 @@ class Player():
         else:
             self.doubleRolls = 0
 
-        return [diceOne,diceTwo]
+        return [diceOne, diceTwo]
 
     #move a given distance
     def move(self, board: List[tile.Tile], playerList):
@@ -57,10 +60,11 @@ class Player():
         while(moved < distance):
             self.location = self.location + 1
             if self.location >= len(board):
-                print("Passed go")
+                print(f"Player {self.piece} passed Go!")
                 self.location = 0
                 self.bankTransaction(200)
             moved += 1
+            
         effect = board[self.location].landedOn(self.piece)
         self.landOnParse(effect, board, playerList)
         #TODO: Remove test print
@@ -70,10 +74,7 @@ class Player():
         instructions = effect.split(':')
         match instructions[0]:
             case 'Charge':
-                if(self.money >= int(instructions[1])):
-                    self.bankTransaction(-int(instructions[1]))
-                else:
-                    self.money = 0
+                self.bankTransaction(-int(instructions[1]))
             case 'Move':
                 if instructions[1] < 0:
                     for i in range(-instructions[1]):
@@ -90,7 +91,7 @@ class Player():
             case 'Draw':
                 pass
             case 'Pay':
-                self.pay(board[instructions[1]], )
+                self.pay(board[instructions[1]], playerList)
             case 'Purchase':
                 pass
             case 'ToJail':
