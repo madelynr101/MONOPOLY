@@ -84,7 +84,7 @@ class ChanceCard(Card):
             # Can be modified to call getRandomAmount if we desire more consumable cards
             randomAmount = ConsumableCards.GET_OUT_OF_JAIL_FREE_CARD
         
-        return CardReturn(flavorText=flavorText, type=card.effect.type, randomAmount=randomAmount)
+        return CardReturn(flavorText=flavorText, type=card.effect.type, requirement=card.effect.semantics, randomAmount=randomAmount)
 
     def getRandomFlavorText(self, card: Flavor) -> str:
         return card.text
@@ -125,7 +125,7 @@ class CommunityCard(Card):
             # Can be modified to call getRandomAmount if we desire more consumable cards
             randomAmount = ConsumableCards.GET_OUT_OF_JAIL_FREE_CARD
 
-        return CardReturn(flavorText=flavorText, type=card.effect.type, randomAmount=randomAmount)
+        return CardReturn(flavorText=flavorText, type=card.effect.type, requirement=card.effect.semantics, randomAmount=randomAmount)
     
     def getRandomFlavorText(self, card: Flavor) -> str:
         return card.text
