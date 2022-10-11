@@ -154,4 +154,4 @@ def main() -> None:
         print(communityCard.getEffect())
 
 if __name__ == "__main__": # Driver for testing
-    main()
+    main()    

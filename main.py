@@ -1,17 +1,19 @@
+# from xml.dom.minidom import TypeInfo
 import pygame
-#from datetime import datetime
+from sys import exit
 
 # Import backend functions for components of the game.
 import tile
 import player
 
-# Seeds RNG based off of the computer's internal clock.
-#random.seed(datetime.now())
-
 pygame.init()
-screen = pygame.display.set_mode((800,400))
+screen = pygame.display.set_mode((800, 400))
 pygame.display.set_caption('Monopoly')
 clock = pygame.time.Clock()
+
+# Attempt to draw something on the pygame window.
+#tileSurface = pygame.Surface((50, 50))
+#tileSurface.fill('White')
 
 gameRunning = True
 jailIndex = 6
@@ -22,7 +24,7 @@ jailIndex = 6
 #put tiles in this array:
 board = []
   
-board.append(tile.GO(0))  # 0 is the tile index
+board.append(tile.Go(0))  # 0 is the tile index
 board.append(tile.Property(1, 500, 25, 'b'))  # Syntax is: (tile index, buy price, rent price, space color)
 board.append(tile.Property(2, 300, 40, 'b'))
 board.append(tile.Property(3, 400, 50, 'b'))
@@ -41,33 +43,35 @@ playerList = []
 players = 4
 
 #change when giving players piece selection if we do that
-for i in range(players-1):
-  playerList.append(player(i))#create a player in the list, just incrementing the piece they are
+for i in range(players):
+  playerList.append(player.Player(i)) # Create a player in the list, just incrementing the piece they are
 
-
+#for i in range(len(board)):
+#  screen.blit(tileSurface, (300, 100 * i))
 
 # Main loop:
 while gameRunning:
-  # Quits the game whenever the application window has been closed.
   #TESTING LOOP
-  
+  # Quits the game whenever the application window has been closed.
+
   for i in range(len(playerList)):
     turnFinished = False
+
     while not turnFinished:
-      playerList[i].move(board)
+      for e in pygame.event.get():
+        if e.type == pygame.QUIT:
+          gameRunning = False
+          pygame.quit()
+          exit()
+
+      playerList[i].move(board, playerList)
       
       cont = input("Enter 'go' to go to next player: ")
       if(cont == "go"):
         turnFinished = True
+
+      pygame.display.update()
+      clock.tick(60)
       
-    print("Player " + i + ": now has $" + playerList[i].money + "\n")
-
-  continue
-  
-  # for e in pygame.event.get():
-  #   if e.type == pygame.QUIT:
-  #     pygame.quit()
-  #     exit()
-
-  # pygame.display.update()
-  # clock.tick(60)
+    print(f"Landed On Tile: {type(board[playerList[i].location])} at Location: {playerList[i].location}")
+    print(f"Player {i} now has ${playerList[i].money}\n")
