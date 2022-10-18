@@ -84,7 +84,7 @@ class FreeParking(Tile):
         super().__init__(index)
 
     def landedOn(self) -> str:  # Blank string means doing nothing
-        return "Move:20"
+        return "Move:20"  # 20 is the index of the jail
 
 
 class GoToJail(Tile):
