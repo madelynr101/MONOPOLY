@@ -7,6 +7,44 @@ from sys import exit
 import tile
 import player 
 
+# Initialize pygame so we can initialize font
+pygame.init()
+
+# Default font
+font = pygame.font.SysFont("arialblack", 40)
+
+# Default text color
+TEXT_COL = (0, 0, 0)
+
+# Text draw function
+def draw_text(screen, text, font, text_col, x, y):
+  img = font.render(text, True, text_col)
+  screen.blit(img, (x, y))
+
+# Use to create and draw buttons using images
+class Button():
+  def __init__(self, x, y, image, scale):
+    self.image = pygame.transform.scale(image, scale)
+    self.rect = self.image.get_rect()
+    self.rect.topleft = (x, y)
+    self.clicked = False
+
+  def draw(self, screen):
+    action = False
+
+    pos = pygame.mouse.get_pos()
+
+    if self.rect.collidepoint(pos):
+      if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
+        self.clicked = True
+        action = True
+
+    if pygame.mouse.get_pressed()[0] == 0:
+      self.clicked = False
+
+    screen.blit(self.image, (self.rect.x, self.rect.y))
+
+    return action
 
 # Purpose: To pick how many players and / or AI's there are within the game
 def choose_people():
@@ -38,50 +76,46 @@ def jail():
 
 # HENRY'S PART 
 # Purpose: To choose the character for each person, either human or AI. 
-def player_loop():
-  #image for character selection 
-  gauntlet = pygame.image.load('Images/gauntlet.png')
-  gauntlet = pygame.transform.scale(gauntlet,(35,35))
-  cape = pygame.image.load('Images/cape.png')
-  cape = pygame.transform.scale(cape,(35,35))
-  batcar = pygame.image.load('Images/batcar.png')
-  batcar = pygame.transform.scale(batcar,(35,35))
-  bat = pygame.image.load('Images/bat.png')
-  bat = pygame.transform.scale(bat,(35,35))
-  pass 
-
-  
-def main():
-  # setup main screen 
-  pygame.init()
-  screen = pygame.display.set_mode((1000, 1000), pygame.RESIZABLE)
-  area = screen.get_rect()
-  pygame.display.set_caption('Monopoly')
-  clock = pygame.time.Clock()
+def player_loop(screen, playerList, playersChosen):
+  availablePieces = [True] * 4
+  while playersChosen < len(playerList):
+    print(playersChosen)
+    screen.fill((255, 255, 255))
+    #image for character selection 
+    gauntlet = pygame.image.load('Images/gauntlet.png')
+    cape = pygame.image.load('Images/cape.png')
+    batcar = pygame.image.load('Images/batcar.png')
+    bat = pygame.image.load('Images/bat.png')
 
 
-  # images and other references 
-  main_surface = pygame.image.load('Images/board.png') # board image 
+    for e in pygame.event.get():
+      if e.type == pygame.QUIT:
+        gameRunning = False
+        pygame.quit()
+        exit()
+
+    draw_text(screen, f"Please select the piece for player {playersChosen + 1}", font, TEXT_COL, 150, 100)
+    gauntletButton = Button(150, 500, gauntlet, (100, 100))
+    capeButton = Button(350, 500, cape, (100, 100))
+    batcarButton = Button(550, 500, batcar, (100, 100))
+    batButton = Button(750, 500, bat, (100, 100))
+    buttons = [gauntletButton, capeButton, batcarButton, batButton]
+
+    for i in range(4):
+      if availablePieces[i]:
+        if buttons[i].draw(screen):
+          availablePieces[i] = False
+          playerList[playersChosen].piece = i
+          playersChosen += 1
 
 
-  # size of main_surface 
-  width, height = main_surface.get_height(), main_surface.get_width()
-  print("area", area)
-  print("Height " + str(height))
-  print("Width " + str(width))
+    pygame.display.update()
 
+def pick_piece(playerIndex, pieceIndex):
+  pass
 
-  gameRunning = True
-  chosen = True
-  jailIndex = 6
-
-  #bank instantiation
-
-
-  #put tiles in this array:
-  board = []
-    
-  # Regular board is: Go, brown, community chest, brown, income tax, railroad, light blue, chance, light blue light blue, jail
+def load_tiles(board):
+    # Regular board is: Go, brown, community chest, brown, income tax, railroad, light blue, chance, light blue light blue, jail
   # Purple, utilities, purple, purple, railroad, orange, community chest, orange, orange, free parking
   # Red, chance, red, red, railroad, yellow, yellow, utilities, yellow, go to jail
   # Green, green, community chest, green, railroad, chance, blue, luxary tax, blue, go
@@ -127,6 +161,38 @@ def main():
   board.append(tile.LuxuryTax(38))
   board.append(tile.Property(39, 400, 50, 'Navy'))
 
+  
+def main():
+  # setup main screen 
+  
+  screen = pygame.display.set_mode((1000, 1000), pygame.RESIZABLE)
+  area = screen.get_rect()
+  pygame.display.set_caption('Monopoly')
+  clock = pygame.time.Clock()
+
+  # images and other references 
+  main_surface = pygame.image.load('Images/board.png') # board image 
+
+
+  # size of main_surface 
+  width, height = main_surface.get_height(), main_surface.get_width()
+  print("area", area)
+  print("Height " + str(height))
+  print("Width " + str(width))
+
+
+  gameRunning = True
+  chosen = True
+  jailIndex = 6
+
+  #bank instantiation
+
+
+  #put tiles in this array:
+  board = []
+    
+  load_tiles(board)
+
   #player array:
   playerList = []
 
@@ -145,6 +211,9 @@ def main():
   while gameRunning:
     #TESTING LOOP
     # Quits the game whenever the application window has been closed.
+    playersChosen = 0
+    if playersChosen < players:
+      player_loop(screen, playerList, playersChosen)
 
     print(f"Turn: {turnCount}")
 
@@ -157,7 +226,7 @@ def main():
             gameRunning = False
             pygame.quit()
             exit()
-
+        
         screen.blit(main_surface, (0,0))
         
 
