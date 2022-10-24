@@ -95,7 +95,7 @@ def player_loop(screen, playerList, playersChosen):
         # image for character selection
         gauntlet = pygame.image.load("Images/gauntlet.png")
         cape = pygame.image.load("Images/cape.png")
-        batcar = pygame.image.load("Images/batcar.png")
+        batcar = pygame.image.load("Images/batmobile.png")
         bat = pygame.image.load("Images/bat.png")
 
         for e in pygame.event.get():
@@ -226,9 +226,9 @@ def main():
     # for i in range(len(board)):
     #  screen.blit(tileSurface, (00, 100 * i))
 
-    # playersChosen = 0
-    # if playersChosen < players:
-    #     player_loop(screen, playerList, playersChosen)
+    playersChosen = 0
+    if playersChosen < players:
+      player_loop(screen, playerList, playersChosen)
 
     endTurnImage = pygame.image.load("Images/endTurn.png")
     endTurnButton = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
@@ -250,7 +250,7 @@ def main():
                         pygame.quit()
                         exit()
 
-                screen.blit(main_surface, (0, 0))
+                # screen.blit(main_surface, (0, 0))
                 playerList[i].displayAmounts(
                     screen, font, PLAYER_COLS[i], (width, height), i
                 )
