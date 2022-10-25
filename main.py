@@ -56,8 +56,27 @@ class Button:
 
 
 # Purpose: To pick how many players and / or AI's there are within the game
-def choose_people():
-    pass
+def choose_people(screen, human_player, AI_player, amnt_players, players):
+    while True:
+        screen.fill((255, 255, 255))
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        draw_text(
+            screen,
+            f"How many human players do you want 0-4?",
+            font,
+            TEXT_COL,
+            10,
+            10,
+        )
+        pygame.display.update()
+        # for i in range(amnt_players):
+        #     if amnt_players < 4:
+        #             amnt_players += 1
+
 
 
 # Purpose: To display dice roll screen and the dice after the roll
@@ -226,12 +245,19 @@ def main():
     # for i in range(len(board)):
     #  screen.blit(tileSurface, (00, 100 * i))
 
-    playersChosen = 0
-    if playersChosen < players:
-      player_loop(screen, playerList, playersChosen)
+    # amount of human vs AI players playing 
+    human_player = 0 
+    AI_player = 0 
+    amnt_players = human_player + AI_player
+    # if amnt_players < players:
+    # choose_people(screen, human_player, AI_player, amnt_players, players)
 
-    endTurnImage = pygame.image.load("Images/endTurn.png")
-    endTurnButton = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
+    playersChosen = 0
+    # if playersChosen < players:
+    #   player_loop(screen, playerList, playersChosen)
+
+    # endTurnImage = pygame.image.load("Images/endTurn.png")
+    # endTurnButton = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
 
     # Main loop:
     while gameRunning:
@@ -250,13 +276,16 @@ def main():
                         pygame.quit()
                         exit()
 
-                # screen.blit(main_surface, (0, 0))
-                playerList[i].displayAmounts(
-                    screen, font, PLAYER_COLS[i], (width, height), i
-                )
+                choose_people(screen, human_player, AI_player, amnt_players, players)
 
-                if endTurnButton.draw(screen):
-                    turnFinished = True
+                # screen.blit(main_surface, (0, 0))
+
+                #playerList[i].displayAmounts(
+                    #screen, font, PLAYER_COLS[i], (width, height), i
+                #)
+
+                # if endTurnButton.draw(screen):
+                #     turnFinished = True
 
                 pygame.display.update()
                 clock.tick(60)
