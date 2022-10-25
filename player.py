@@ -2,7 +2,7 @@ import tile
 import random
 from typing import List
 from datetime import datetime
-from pygame import display, font
+import pygame
 
 random.seed(datetime.now())
 
@@ -12,7 +12,7 @@ jailIndex = 10
 class Player:
     def __init__(self, pieceIn, AI):
         self.money = 1500  # The amount of money the player currently has
-        self.properties = []  # properties play owns
+        self.properties: list[tile.Property] = []  # properties play owns
         self.location = 0  # Index value for the tile the player is currently
         self.getOutOfJailCards = (
             0  # The number of get out of jail free cards the player currently has
@@ -268,13 +268,14 @@ class Player:
     # Purpose: To display player name, properties, money, etc.
     def displayAmounts(
         self,
-        screen: display,
-        font: font,
+        screen: pygame.display,
+        font: pygame.font,
         text_color: int,
         screen_size: tuple[int],
         player_index: int,
+        property_locations: list[tuple[int, int]],
     ) -> None:
-        # Colors and positions
+        # Positions
         money_position: tuple[int] = (screen_size[0] / 7, screen_size[1] / 1.36)
 
         player_position: tuple[int] = (screen_size[1] / 3, screen_size[0] / 7)
@@ -288,3 +289,37 @@ class Player:
             font.render(f"Player {player_index + 1}'s turn", True, text_color),
             player_position,
         )
+
+        # For testing purposes
+        # self.properties.append(tile.Property(3, 60, 4, "Brown"))
+        # self.properties.append(tile.Property(18, 60, 4, "Brown"))
+        # self.properties.append(tile.Property(25, 60, 4, "Brown"))
+        # self.properties.append(tile.Property(39, 60, 4, "Brown"))
+
+        number_font: pygame.font = pygame.font.SysFont("arialblack", 20)
+
+        for property in self.properties:
+            location: tuple[int, int] = property_locations[property.index]
+
+            pygame.draw.circle(screen, text_color, location, 20)
+
+            number = number_font.render(f"{player_index + 1}", True, (0, 0, 0))
+            text_location: list[int] = [location[0] - 6, location[1] - 15]
+
+            if 20 > property.index > 9:
+                number = pygame.transform.rotate(number, -90)
+                text_location[0] -= 6
+                text_location[1] += 8
+            elif 30 > property.index > 20:
+                number = pygame.transform.rotate(number, 180)
+                text_location[0] += 1
+                text_location[1] += 2
+            elif property.index > 30:
+                number = pygame.transform.rotate(number, 90)
+                text_location[0] -= 8
+                text_location[1] += 9
+
+            screen.blit(
+                number,
+                text_location,
+            )

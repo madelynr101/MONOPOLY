@@ -23,6 +23,49 @@ PLAYER_COLS: list[tuple[int]] = [
     (209, 155, 46),
 ]
 
+PROPERTY_LOCATIONS: list[tuple[int, int]] = [
+    (0, 0),
+    (827, 940),
+    (0, 0),
+    (663, 940),
+    (0, 0),
+    (500, 940),
+    (417, 940),
+    (0, 0),
+    (254, 940),
+    (172, 940),
+    (0, 0),
+    (60, 828),
+    (60, 745),
+    (60, 664),
+    (60, 582),
+    (60, 500),
+    (60, 417),
+    (0, 0),
+    (60, 252),
+    (60, 172),
+    (0, 0),
+    (172, 60),
+    (0, 0),
+    (336, 60),
+    (417, 60),
+    (500, 60),
+    (582, 60),
+    (663, 60),
+    (746, 60),
+    (827, 60),
+    (0, 0),
+    (940, 172),
+    (940, 254),
+    (0, 0),
+    (940, 417),
+    (940, 500),
+    (0, 0),
+    (940, 664),
+    (0, 0),
+    (940, 828),
+]
+
 # Text draw function
 def draw_text(screen, text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -228,7 +271,7 @@ def main():
 
     playersChosen = 0
     if playersChosen < players:
-      player_loop(screen, playerList, playersChosen)
+        player_loop(screen, playerList, playersChosen)
 
     endTurnImage = pygame.image.load("Images/endTurn.png")
     endTurnButton = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
@@ -250,9 +293,9 @@ def main():
                         pygame.quit()
                         exit()
 
-                # screen.blit(main_surface, (0, 0))
+                screen.blit(main_surface, (0, 0))
                 playerList[i].displayAmounts(
-                    screen, font, PLAYER_COLS[i], (width, height), i
+                    screen, font, PLAYER_COLS[i], (width, height), i, PROPERTY_LOCATIONS
                 )
 
                 if endTurnButton.draw(screen):
