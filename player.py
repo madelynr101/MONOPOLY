@@ -6,8 +6,6 @@ from datetime import datetime
 import pygame
 from draw import Button, draw_text
 
-from main import 
-
 random.seed(datetime.now())
 
 jailIndex = 10
@@ -86,7 +84,14 @@ class Player:
         return [diceOne, diceTwo]
 
     # move a given distance
-    def move(self, board: List[tile.Tile], playerList: list[Player], screen: pygame.display, font: pygame.font, text_color: tuple[int, int, int]):
+    def move(
+        self,
+        board: List[tile.Tile],
+        playerList,
+        screen: pygame.display,
+        font: pygame.font,
+        text_color: tuple[int, int, int],
+    ):
         dice = self.roll()
         if self.isInJail:
             # TODO Once we have pygame figured out, we need an option to pay $50 to leave jail early
@@ -116,7 +121,15 @@ class Player:
         # TODO: Remove test print
         print(f"player {self.piece} has reached space {self.location}")
 
-    def landOnParse(self, effect: str, board: tile.Tile, playerList: list[Player], screen: pygame.display, font: pygame.font, text_color: tuple[int, int, int]) -> None:
+    def landOnParse(
+        self,
+        effect: str,
+        board: tile.Tile,
+        playerList,
+        screen: pygame.display,
+        font: pygame.font,
+        text_color: tuple[int, int, int],
+    ) -> None:
         instructions = effect.split(":")
         print(f"{effect=}")
         if len(instructions) > 1:
@@ -211,7 +224,7 @@ class Player:
                 purchaseProperty = True
                 if not self.isAI:
                     decisionMade = False
- 
+
                     yes = pygame.images.load("Images/yes.png")
                     no = pygame.images.load("Images/no.png")
 
@@ -222,7 +235,7 @@ class Player:
                             font,
                             text_color,
                             10,
-                            10
+                            10,
                         )
 
                         # TODO: Get pictures of a 'Yes' or 'No.'
@@ -324,14 +337,26 @@ class Player:
         player_position: tuple[int] = (screen_size[1] / 3, screen_size[0] / 7)
 
         # Display
-        draw_text(screen, f"Money: ${self.money}", text_color, money_position[0], money_position[1])
-        draw_text(screen, f"Player {player_index + 1}'s turn", text_color, player_position[0], player_position[1])
+        draw_text(
+            screen,
+            f"Money: ${self.money}",
+            text_color,
+            money_position[0],
+            money_position[1],
+        )
+        draw_text(
+            screen,
+            f"Player {player_index + 1}'s turn",
+            text_color,
+            player_position[0],
+            player_position[1],
+        )
         # screen.blit(
         #     font.render(f"Money: ${self.money}", True, text_color), money_position
         # )
         # screen.blit(
-            # font.render(f"Player {player_index + 1}'s turn", True, text_color),
-            # player_position,
+        # font.render(f"Player {player_index + 1}'s turn", True, text_color),
+        # player_position,
         # )
 
     # Purpose: To display player name, properties, money, etc.

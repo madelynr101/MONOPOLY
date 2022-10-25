@@ -103,15 +103,14 @@ def choose_people(screen, human_player, AI_player, amnt_players, players, filler
 
         for i in range(5):
             buttons[i].draw(screen)
-            
-        
+
         # start human player screen
         screen.fill((255, 255, 255))
-                
+
         draw_text(
             screen,
             f"How many human players do you want 0-4?",
-            font, 
+            font,
             TEXT_COL,
             20,
             20,
@@ -123,14 +122,13 @@ def choose_people(screen, human_player, AI_player, amnt_players, players, filler
         pygame.display.update()
 
 
-
 # Matthew Chenot
 # Purpose: To display dice roll screen and the dice after the roll
 def roll():
     # A roll button on the main bit that players press to roll
     # Doing this brings up a pop up with that shows the faces of the two dice they rolled
     # There is then a button to close this screen
-    
+
     # NOTE: think on moving this to the roll function, that way the popup can show up for the jail stuff to
 
     dice1 = pygame.images.load("Images/dice1.png")
@@ -141,63 +139,34 @@ def roll():
     dice6 = pygame.images.load("Images/dice6.png")
 
     pass
- 
-# Bryan
-# Purpose: To display buy property, choice to buy or not
-def property_buy(screen, player):
-    decisionMade = False
- 
-    yes = pygame.images.load("Images/yes.png")
-    no = pygame.images.load("Images/no.png")
- 
-    while not decisionMade:
-        draw_text(
-            screen,
-            f"Do you want to purchase this property?",
-            font,
-            TEXT_COL,
-            10,
-            10
-        )
- 
-        # TODO: Get pictures of a 'Yes' or 'No.'
-        yesButton = Button(50, 100, yes, (20, 20))
-        noButton = Button(100, 100, no, (20, 20))
 
-        if not decisionMade:
-            if yesButton.draw(screen):
-                decisionMade = True
-                player.
-                # Player buys property here.
 
-            # Player does not buy property, the screen closes.
-            elif noButton.draw(screen):
-                decisionMade = True
- 
 # Henry
 # Purpose: To diplay game over button
 def game_over():
     pass
- 
+
+
 # Madelyn Weathers
 # Purpose: To show how much money someone gets paid after they land on their property
 def get_paid():
     pass
- 
+
+
 # Ethan Moore
 # Purpose: Show when someone gets sent to jail, chose to attempt a roll or pay $50 to get out
 def jail(prisoner: player.Player):
     choiceMade = False
     escapeImage = pygame.images.load("Images/escapeButton.png")
     payImage = pygame.images.load("Images/payButton.png")
-    useCardImage = pygame.images.load("Images/useCard.png)
-    #TODO: get button images made and fix those numbers in button
+    useCardImage = pygame.images.load("Images/useCard.png")
+    # TODO: get button images made and fix those numbers in button
     while not choiceMade:
-        draw_text(screen, f"How do you want to leave jail?", font, TEXT_COL, 10,10)
-        escapeButton = Button(50,100, escapeImage )
+        draw_text(screen, f"How do you want to leave jail?", font, TEXT_COL, 10, 10)
+        escapeButton = Button(50, 100, escapeImage)
         payButton = Button()
         cardButton = Button()
-       
+
         if escapeButton.draw():
             prisoner.move()
             choiceMade = True
@@ -366,9 +335,9 @@ def main():
     # for i in range(len(board)):
     #  screen.blit(tileSurface, (00, 100 * i))
 
-    # amount of human vs AI players playing 
-    human_player = 0 
-    AI_player = 0 
+    # amount of human vs AI players playing
+    human_player = 0
+    AI_player = 0
     amnt_players = human_player + AI_player
     fillerList = []
     # if amnt_players < players:
@@ -398,18 +367,20 @@ def main():
                         pygame.quit()
                         exit()
 
-                choose_people(screen, human_player, AI_player, amnt_players, players, fillerList)
+                choose_people(
+                    screen, human_player, AI_player, amnt_players, players, fillerList
+                )
 
                 # screen.blit(main_surface, (0, 0))
 
-                #playerList[i].displayAmounts(
-                    #screen, font, PLAYER_COLS[i], (width, height), i
-                #)
+                # playerList[i].displayAmounts(
+                # screen, font, PLAYER_COLS[i], (width, height), i
+                # )
 
                 # if endTurnButton.draw(screen):
                 #     turnFinished = True
                 screen.blit(main_surface, (0, 0))
-                
+
                 playerList[i].displayNameMoney(
                     screen, font, PLAYER_COLS[i], (width, height), i
                 )
