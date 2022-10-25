@@ -99,7 +99,15 @@ class Button:
 
 
 # Purpose: To pick how many players and / or AI's there are within the game
-def choose_people(screen, human_player, AI_player, amnt_players, players):
+def choose_people(screen, human_player, AI_player, amnt_players, players, fillerList):
+    availablePieces = [True] * 5
+    # image for character selection
+    zero = pygame.image.load("Images/0.png")
+    one = pygame.image.load("Images/1.png")
+    two = pygame.image.load("Images/2.png")
+    three = pygame.image.load("Images/3.png")
+    four = pygame.image.load("Images/4.png")
+
     while True:
         screen.fill((255, 255, 255))
         for event in pygame.event.get():
@@ -112,13 +120,25 @@ def choose_people(screen, human_player, AI_player, amnt_players, players):
             f"How many human players do you want 0-4?",
             font,
             TEXT_COL,
-            10,
-            10,
+            20,
+            20,
         )
+
+        zeroButton = Button(150, 500, zero, (80, 80))
+        oneButton = Button(350, 500, one, (80, 80))
+        twoButton = Button(550, 500, two, (80, 80))
+        threeButton = Button(750, 500, three, (80, 80))
+        fourButton = Button(950, 500, four, (80, 80))
+        buttons = [zeroButton, oneButton, twoButton, threeButton, fourButton]
+
+        for i in range(5):
+                if availablePieces[i]:
+                    if buttons[i].draw(screen):
+                        availablePieces[i] = False
+                        fillerList[amnt_players].piece = i
+                        amnt_players += 1
+
         pygame.display.update()
-        # for i in range(amnt_players):
-        #     if amnt_players < 4:
-        #             amnt_players += 1
 
 
 
@@ -303,6 +323,7 @@ def main():
     human_player = 0 
     AI_player = 0 
     amnt_players = human_player + AI_player
+    fillerList = []
     # if amnt_players < players:
     # choose_people(screen, human_player, AI_player, amnt_players, players)
 
@@ -330,7 +351,7 @@ def main():
                         pygame.quit()
                         exit()
 
-                choose_people(screen, human_player, AI_player, amnt_players, players)
+                choose_people(screen, human_player, AI_player, amnt_players, players, fillerList)
 
                 # screen.blit(main_surface, (0, 0))
 
