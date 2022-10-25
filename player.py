@@ -2,7 +2,11 @@ import tile
 import random
 from typing import List
 from datetime import datetime
+
 import pygame
+from draw import Button, draw_text
+
+from main import 
 
 random.seed(datetime.now())
 
@@ -82,7 +86,7 @@ class Player:
         return [diceOne, diceTwo]
 
     # move a given distance
-    def move(self, board: List[tile.Tile], playerList):
+    def move(self, board: List[tile.Tile], playerList: list[Player], screen: pygame.display, font: pygame.font, text_color: tuple[int, int, int]):
         dice = self.roll()
         if self.isInJail:
             # TODO Once we have pygame figured out, we need an option to pay $50 to leave jail early
@@ -108,11 +112,11 @@ class Player:
         else:
             effect = board[self.location].landedOn()
 
-        self.landOnParse(effect, board, playerList)
+        self.landOnParse(effect, board, playerList, screen, font, text_color)
         # TODO: Remove test print
         print(f"player {self.piece} has reached space {self.location}")
 
-    def landOnParse(self, effect: str, board: tile.Tile, playerList) -> None:
+    def landOnParse(self, effect: str, board: tile.Tile, playerList: list[Player], screen: pygame.display, font: pygame.font, text_color: tuple[int, int, int]) -> None:
         instructions = effect.split(":")
         print(f"{effect=}")
         if len(instructions) > 1:
@@ -127,7 +131,6 @@ class Player:
                 )  # instructionValue is a dollar amount
 
             case "ReceiveFromAll":  # All other players give you money
-                # TODO Impliment
                 # instructionValue is a dollar amount owed in this context
                 for player in playerList:
                     if player.piece != self.piece:
@@ -139,9 +142,8 @@ class Player:
                             player.isBankrupt = True
                             self.RemoveProperties()
                         else:  # Players can afford to pay
-                            # TODO finish this
-                            pass
-                pass
+                            self.money += instructionValue  # You get money
+                            player.money -= instructionValue  # They lose the money
 
             case "Pay":  # board[instructionValue] should be the inedex value of the property being landed on
                 self.pay(board[instructionValue], playerList)
@@ -205,21 +207,50 @@ class Player:
                             self.isBankrupt = True
                             break
 
-            case "Purchase":  # Note that 'amount' here reffers to the inedex of the tile being purchased
+            case "Purchase":  # Note that instruction here reffers to the inedex of the tile being purchased
+                purchaseProperty = True
                 if not self.isAI:
-                    # TODO: dialog box that returns some kind of boolean. Return if not looking to buy, else continue
-                    pass
+                    decisionMade = False
+ 
+                    yes = pygame.images.load("Images/yes.png")
+                    no = pygame.images.load("Images/no.png")
 
-                if (
-                    board[instructionValue].getCost() < self.money
-                ):  # Force buy property if you can afford it
-                    self.money -= board[
-                        instructionValue
-                    ].getCost()  # TODO Make purchasing optional
-                    self.properties.append(board[instructionValue])
-                    board[instructionValue].setOwner(self.piece)
-                else:
-                    print("Can't afford property!")
+                    while not decisionMade:
+                        draw_text(
+                            screen,
+                            f"Do you want to purchase this property?",
+                            font,
+                            text_color,
+                            10,
+                            10
+                        )
+
+                        # TODO: Get pictures of a 'Yes' or 'No.'
+                        yesButton = Button(50, 100, yes, (20, 20))
+                        noButton = Button(100, 100, no, (20, 20))
+
+                        if not decisionMade:
+                            if yesButton.draw(screen):
+                                decisionMade = True
+                                purchaseProperty = True
+                                # Player buys property here.
+
+                            # Player does not buy property, the screen closes.
+                            elif noButton.draw(screen):
+                                decisionMade = True
+                                purchaseProperty = False
+
+                if purchaseProperty:
+                    if (
+                        board[instructionValue].getCost() < self.money
+                    ):  # Force buy property if you can afford it
+                        self.money -= board[
+                            instructionValue
+                        ].getCost()  # TODO Make purchasing optional
+                        self.properties.append(board[instructionValue])
+                        board[instructionValue].setOwner(self.piece)
+                    else:
+                        print("Can't afford property!")
 
             case "Move":
                 if instructionValue < 0:
@@ -293,14 +324,15 @@ class Player:
         player_position: tuple[int] = (screen_size[1] / 3, screen_size[0] / 7)
 
         # Display
-        screen.blit(
-            font.render(f"Money: ${self.money}", True, text_color), money_position
-        )
-
-        screen.blit(
-            font.render(f"Player {player_index + 1}'s turn", True, text_color),
-            player_position,
-        )
+        draw_text(screen, f"Money: ${self.money}", text_color, money_position[0], money_position[1])
+        draw_text(screen, f"Player {player_index + 1}'s turn", text_color, player_position[0], player_position[1])
+        # screen.blit(
+        #     font.render(f"Money: ${self.money}", True, text_color), money_position
+        # )
+        # screen.blit(
+            # font.render(f"Player {player_index + 1}'s turn", True, text_color),
+            # player_position,
+        # )
 
     # Purpose: To display player name, properties, money, etc.
     def displayProperties(

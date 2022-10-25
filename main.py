@@ -2,6 +2,7 @@
 from turtle import width
 import pygame
 from sys import exit
+from draw import Button, draw_text
 
 # Import backend functions for components of the game.
 import tile
@@ -66,47 +67,23 @@ PROPERTY_LOCATIONS: list[tuple[int, int]] = [
     (940, 828),
 ]
 
-# Text draw function
-def draw_text(screen, text, font, text_col, x, y):
-    img = font.render(text, True, text_col)
-    screen.blit(img, (x, y))
-
-
-# Use to create and draw buttons using images
-class Button:
-    def __init__(self, x, y, image, scale):
-        self.image = pygame.transform.scale(image, scale)
-        self.rect = self.image.get_rect()
-        self.rect.topleft = (x, y)
-        self.clicked = False
-
-    def draw(self, screen):
-        action = False
-
-        pos = pygame.mouse.get_pos()
-
-        if self.rect.collidepoint(pos):
-            if pygame.mouse.get_pressed()[0] == 1 and self.clicked == False:
-                self.clicked = True
-                action = True
-
-        if pygame.mouse.get_pressed()[0] == 0:
-            self.clicked = False
-
-        screen.blit(self.image, (self.rect.x, self.rect.y))
-
-        return action
-
 
 # Purpose: To pick how many players and / or AI's there are within the game
 def choose_people(screen, human_player, AI_player, amnt_players, players, fillerList):
-    availablePieces = [True] * 5
+    availablePeople = [True] * 5
     # image for character selection
     zero = pygame.image.load("Images/0.png")
     one = pygame.image.load("Images/1.png")
     two = pygame.image.load("Images/2.png")
     three = pygame.image.load("Images/3.png")
     four = pygame.image.load("Images/4.png")
+
+    zeroButton = Button(150, 500, zero, (80, 80))
+    oneButton = Button(350, 500, one, (80, 80))
+    twoButton = Button(550, 500, two, (80, 80))
+    threeButton = Button(750, 500, three, (80, 80))
+    fourButton = Button(950, 500, four, (80, 80))
+    buttons = [zeroButton, oneButton, twoButton, threeButton, fourButton]
 
     while True:
         screen.fill((255, 255, 255))
@@ -117,59 +94,129 @@ def choose_people(screen, human_player, AI_player, amnt_players, players, filler
 
         draw_text(
             screen,
-            f"How many human players do you want 0-4?",
+            f"How many AI players do you want 0-4?",
             font,
             TEXT_COL,
             20,
             20,
         )
 
-        zeroButton = Button(150, 500, zero, (80, 80))
-        oneButton = Button(350, 500, one, (80, 80))
-        twoButton = Button(550, 500, two, (80, 80))
-        threeButton = Button(750, 500, three, (80, 80))
-        fourButton = Button(950, 500, four, (80, 80))
-        buttons = [zeroButton, oneButton, twoButton, threeButton, fourButton]
+        for i in range(5):
+            buttons[i].draw(screen)
+            
+        
+        # start human player screen
+        screen.fill((255, 255, 255))
+                
+        draw_text(
+            screen,
+            f"How many human players do you want 0-4?",
+            font, 
+            TEXT_COL,
+            20,
+            20,
+        )
 
         for i in range(5):
-                if availablePieces[i]:
-                    if buttons[i].draw(screen):
-                        availablePieces[i] = False
-                        fillerList[amnt_players].piece = i
-                        amnt_players += 1
+            buttons[i].draw(screen)
 
         pygame.display.update()
 
 
 
+# Matthew Chenot
 # Purpose: To display dice roll screen and the dice after the roll
 def roll():
+    # A roll button on the main bit that players press to roll
+    # Doing this brings up a pop up with that shows the faces of the two dice they rolled
+    # There is then a button to close this screen
+    
+    # NOTE: think on moving this to the roll function, that way the popup can show up for the jail stuff to
+
+    dice1 = pygame.images.load("Images/dice1.png")
+    dice2 = pygame.images.load("Images/dice2.png")
+    dice3 = pygame.images.load("Images/dice3.png")
+    dice4 = pygame.images.load("Images/dice4.png")
+    dice5 = pygame.images.load("Images/dice5.png")
+    dice6 = pygame.images.load("Images/dice6.png")
+
     pass
+ 
+# Bryan
+# Purpose: To display buy property, choice to buy or not
+def property_buy(screen, player):
+    decisionMade = False
+ 
+    yes = pygame.images.load("Images/yes.png")
+    no = pygame.images.load("Images/no.png")
+ 
+    while not decisionMade:
+        draw_text(
+            screen,
+            f"Do you want to purchase this property?",
+            font,
+            TEXT_COL,
+            10,
+            10
+        )
+ 
+        # TODO: Get pictures of a 'Yes' or 'No.'
+        yesButton = Button(50, 100, yes, (20, 20))
+        noButton = Button(100, 100, no, (20, 20))
 
+        if not decisionMade:
+            if yesButton.draw(screen):
+                decisionMade = True
+                player.
+                # Player buys property here.
 
-# Purpose: To display buy property
-def property_buy():
-    pass
-
-
+            # Player does not buy property, the screen closes.
+            elif noButton.draw(screen):
+                decisionMade = True
+ 
+# Henry
 # Purpose: To diplay game over button
 def game_over():
     pass
-
-
+ 
+# Madelyn Weathers
 # Purpose: To show how much money someone gets paid after they land on their property
 def get_paid():
     pass
-
-
-# Purpose: Show when someone gets sent to jail
-def jail():
-    pass
+ 
+# Ethan Moore
+# Purpose: Show when someone gets sent to jail, chose to attempt a roll or pay $50 to get out
+def jail(prisoner: player.Player):
+    choiceMade = False
+    escapeImage = pygame.images.load("Images/escapeButton.png")
+    payImage = pygame.images.load("Images/payButton.png")
+    useCardImage = pygame.images.load("Images/useCard.png)
+    #TODO: get button images made and fix those numbers in button
+    while not choiceMade:
+        draw_text(screen, f"How do you want to leave jail?", font, TEXT_COL, 10,10)
+        escapeButton = Button(50,100, escapeImage )
+        payButton = Button()
+        cardButton = Button()
+       
+        if escapeButton.draw():
+            prisoner.move()
+            choiceMade = True
+        if prisoner.money > 50:
+            if payButton.draw():
+                prisoner.bankTransaction(-50)
+                prisoner.isInJail = False
+                choiceMade = True
+                prisoner.move()
+        if prisoner.getOutOfJail > 0:
+            if cardButton.draw():
+                prisoner.isInJail = False
+                choiceMade = True
+                prisoner.move()
 
 
 # HENRY'S PART
 # Purpose: To choose the character for each person, either human or AI.
-def player_loop(screen, playerList, playersChosen):
+def player_loop(screen: pygame.display, playerList: list[player.Player], playersChosen):
     availablePieces = [True] * 4
     while playersChosen < len(playerList):
         print(playersChosen)
