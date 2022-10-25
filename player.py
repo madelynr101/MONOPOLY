@@ -10,18 +10,32 @@ jailIndex = 10
 
 
 class Player:
-    def __init__(self, pieceIn, AI):
-        self.money = 1500  # The amount of money the player currently has
+    def __init__(self, pieceIn: int, AI: bool):
+        self.money: int = 1500  # The amount of money the player currently has
         self.properties: list[tile.Property] = []  # properties play owns
-        self.location = 0  # Index value for the tile the player is currently
-        self.getOutOfJailCards = (
+        self.location: int = 0  # Index value for the tile the player is currently
+        self.getOutOfJailCards: int = (
             0  # The number of get out of jail free cards the player currently has
         )
-        self.isInJail = False  # Is the player currently in jail
-        self.doubleRolls = 0  # Increases whenever the player rolls doubles, set back to zero when they don't
-        self.piece = pieceIn  # Index of the players piece
-        self.isBankrupt = False  # Is the player currently bankrupt
-        self.isAI = AI
+        self.isInJail: bool = False  # Is the player currently in jail
+        self.doubleRolls: int = 0  # Increases whenever the player rolls doubles, set back to zero when they don't
+        self.piece: int = pieceIn  # Index of the players piece
+        self.isBankrupt: bool = False  # Is the player currently bankrupt
+        self.isAI: bool = AI
+
+    # For testing purposes
+    # def __init__(self, pieceIn: int, AI: bool, properties: list[tile.Property]):
+    #     self.money: int = 1500  # The amount of money the player currently has
+    #     self.properties: list[tile.Property] = properties  # properties play owns
+    #     self.location: int = 0  # Index value for the tile the player is currently
+    #     self.getOutOfJailCards: int = (
+    #         0  # The number of get out of jail free cards the player currently has
+    #     )
+    #     self.isInJail: bool = False  # Is the player currently in jail
+    #     self.doubleRolls: int = 0  # Increases whenever the player rolls doubles, set back to zero when they don't
+    #     self.piece: int = pieceIn  # Index of the players piece
+    #     self.isBankrupt: bool = False  # Is the player currently bankrupt
+    #     self.isAI: bool = AI
 
     def getProperties(self) -> str:
         propList = ""
@@ -265,15 +279,13 @@ class Player:
         self.index = jailIndex
         self.isInJail = True
 
-    # Purpose: To display player name, properties, money, etc.
-    def displayAmounts(
+    def displayNameMoney(
         self,
         screen: pygame.display,
         font: pygame.font,
-        text_color: int,
-        screen_size: tuple[int],
+        text_color: tuple[int, int, int],
+        screen_size: tuple[int, int],
         player_index: int,
-        property_locations: list[tuple[int, int]],
     ) -> None:
         # Positions
         money_position: tuple[int] = (screen_size[0] / 7, screen_size[1] / 1.36)
@@ -290,11 +302,14 @@ class Player:
             player_position,
         )
 
-        # For testing purposes
-        # self.properties.append(tile.Property(3, 60, 4, "Brown"))
-        # self.properties.append(tile.Property(18, 60, 4, "Brown"))
-        # self.properties.append(tile.Property(25, 60, 4, "Brown"))
-        # self.properties.append(tile.Property(39, 60, 4, "Brown"))
+    # Purpose: To display player name, properties, money, etc.
+    def displayProperties(
+        self,
+        screen: pygame.display,
+        text_color: tuple[int, int, int],
+        player_index: int,
+        property_locations: list[tuple[int, int]],
+    ) -> None:
 
         number_font: pygame.font = pygame.font.SysFont("arialblack", 20)
 
