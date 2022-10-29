@@ -20,6 +20,7 @@ class Player:
             0  # The number of get out of jail free cards the player currently has
         )
         self.isInJail: bool = False  # Is the player currently in jail
+        self.isRollingDone: bool = False  # Set to true once the player can no longer roll during thier current turn
         self.doubleRolls: int = 0  # Increases whenever the player rolls doubles, set back to zero when they don't
         self.piece: int = pieceIn  # Index of the players piece
         self.isBankrupt: bool = False  # Is the player currently bankrupt
@@ -43,6 +44,7 @@ class Player:
     #     self.isBankrupt: bool = False  # Is the player currently bankrupt
     #     self.isAI: bool = AI
 
+    # Test function to print all the properties a player owns
     def getProperties(self) -> str:
         propList = ""
         for prop in self.properties:
@@ -74,16 +76,39 @@ class Player:
             self.isBankrupt = True
             self.RemoveProperties()
 
-    # Simulate dice roll, two random numbers 1-6, mark if doubles, returns the rolled value
-    def roll(self) -> List[int]:
+    # Simulate dice roll, two random numbers 1-6, returns the rolled values in a list
+    # TODO Fix what changing this function call probably broke in jail
+    def roll(self, screen: pygame.surface.Surface) -> List[int]:
         diceOne = random.randint(1, 6)
         diceTwo = random.randint(1, 6)
 
-        if diceOne == diceTwo:
-            self.doubleRolls += 1
+        # TODO Popup showing what the dice rolls where
+        print("Rolled: " + str(diceOne) + " & " + str(diceTwo))  # High quality viusal interface
+        # width, height = main_surface.get_height(), main_surface.get_width()
 
-        else:
-            self.doubleRolls = 0
+        # We need all the dice in a list so we can index them
+        # All numbers are random placeholders atm
+        '''diceImageList = []
+        diceImageList.append(pygame.image.load("Images/dice1.png"))
+        diceImageList.append(pygame.image.load("Images/dice2.png"))
+        diceImageList.append(pygame.image.load("Images/dice3.png"))
+        diceImageList.append(pygame.image.load("Images/dice4.png"))
+        diceImageList.append(pygame.image.load("Images/dice5.png"))
+        diceImageList.append(pygame.image.load("Images/dice6.png"))
+
+        rollWindowOpen = True
+
+        while rollWindowOpen:
+            screen.blit(diceImageList[diceOne - 1], (0, 0))  # Draw the two dice
+            screen.blit(diceImageList[diceTwo - 1], (20, 20))
+
+            closeImage = pygame.image.load("Images/closeButton.png")
+            closeButton = Button(500, 500, closeImage, (200, 50))
+
+            if closeButton.draw(screen):
+                rollWindowOpen = False'''
+
+
 
         return [diceOne, diceTwo]
 
@@ -97,14 +122,23 @@ class Player:
         text_color: tuple[int, int, int],
     ):
         print(self.location)
-        dice = self.roll()
+        dice = self.roll(screen)
         if self.isInJail:
             # TODO Once we have pygame figured out, we need an option to pay $50 to leave jail early
             # TODO If a player has a get out of jail free card, they can use it to get out of jail
             self.escapeJail(dice)
             return
 
-        if self.doubleRolls == 3:
+        if dice[0] != dice[1]:  # If we didn't roll doubles
+            self.isRollingDone = True
+            self.doubleRolls = 0
+
+        else:  # We did roll doubles
+            self.doubleRolls += 1
+
+        if self.doubleRolls == 3:  # Our third double roll takes us immediatly to jail
+            self.isRollingDone = True
+            self.doubleRolls = 0
             self.toJail()
 
         distance = dice[0] + dice[1]
@@ -317,6 +351,8 @@ class Player:
         if dice[0] == dice[1]:
             self.isInJail = False
 
+        self.isRollingDone = True  # One roll per turn in jail, regardless of if you roll doubles and get out or not
+
     def RemoveProperties(
         self,
     ) -> None:  # Called when a player goes bankrupt, returns all of thier properties to the bank
@@ -464,3 +500,9 @@ class Player:
                     player_locations[self.location][index][1],
                 ),
             )
+
+    def getIsRollingDone(self) -> bool:  # Return if player can roll at the current moment
+        return self.isRollingDone
+
+    def setIsRollingDone(self, value) -> None:  # Set player rolling ability to passed value
+        self.isRollingDone = value

@@ -171,7 +171,7 @@ def choose_people(screen, human_player, AI_player, amnt_players, players, filler
         pygame.display.update()
 
 
-# Matthew Chenot
+# Matt Chenot
 # Purpose: To display dice roll screen and the dice after the roll
 def roll():
     # A roll button on the main bit that players press to roll
@@ -353,7 +353,7 @@ def main():
 
     gameRunning = True
     chosen = True
-    jailIndex = 6
+    jailIndex = 10
 
     # bank instantiation
 
@@ -404,6 +404,9 @@ def main():
     endTurnImage = pygame.image.load("Images/endTurn.png")
     endTurnButton = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
 
+    rollImage = pygame.image.load("Images/rollButton.png")
+    rollButton = Button(width / 2.75, height / 1.26, rollImage, (200, 50))
+
     # Main loop:
     while gameRunning:
         # TESTING LOOP
@@ -413,6 +416,7 @@ def main():
 
         for i in range(len(playerList)):
             turnFinished = False
+            playerList[i].setIsRollingDone(False)  # Reset dice rolls at the start of each players turn
 
             while not turnFinished:
                 for e in pygame.event.get():
@@ -443,8 +447,19 @@ def main():
                         screen, PIECE_IMAGES, PLAYER_LOCATIONS, j
                     )
 
-                if endTurnButton.draw(screen):
+                if endTurnButton.draw(screen):  # Button to pass the turn
                     turnFinished = True
+
+                # A test that actually does what it's suppost to for once
+                # closeImage = pygame.image.load("Images/closeButton.png")
+                # closeButton = Button(500, 500, closeImage, (200, 50))
+                # if closeButton.draw(screen):
+                    # pass
+
+                # Rolling
+                if playerList[i].getIsRollingDone() == False: # If the player can roll
+                    if rollButton.draw(screen):  
+                        playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])  # The visuals for the dice are done in the roll function since that is also called during jail stuff
 
                 pygame.display.update()
                 clock.tick(60)
