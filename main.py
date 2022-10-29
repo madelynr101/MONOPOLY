@@ -204,32 +204,33 @@ def get_paid():
 
 # Ethan Moore
 # Purpose: Show when someone gets sent to jail, chose to attempt a roll or pay $50 to get out
-def jail(prisoner: player.Player):
+def jail(prisoner: int):
     choiceMade = False
     escapeImage = pygame.images.load("Images/escapeButton.png")
     payImage = pygame.images.load("Images/payButton.png")
-    useCardImage = pygame.images.load("Images/useCard.png")
-    # TODO: get button images made and fix those numbers in button
+    useCardImage = pygame.images.load("Images/cardButton.png")
+    # TODO: ensure buttons properly display
     while not choiceMade:
-        draw_text(screen, f"How do you want to leave jail?", font, TEXT_COL, 10, 10)
-        escapeButton = Button(50, 100, escapeImage)
-        payButton = Button()
-        cardButton = Button()
+        draw_text(screen, f"How do you want to leave jail?", font, TEXT_COL, 20, 20)
+        escapeButton = Button(50, 100, escapeImage, (50, 100))
+        payButton = Button(150, 100, payImage, (50,100))
+        cardButton = Button(250, 100, useCardImage, (50,100))
 
         if escapeButton.draw():
-            prisoner.move()
+            playerList[prisioner].move()
             choiceMade = True
         if prisoner.money > 50:
             if payButton.draw():
-                prisoner.bankTransaction(-50)
-                prisoner.isInJail = False
+                playerList[prisoner].bankTransaction(-50)
+                playerList[prisoner].isInJail = False
                 choiceMade = True
-                prisoner.move()
+                playerList[prisoner].move()
         if prisoner.getOutOfJailCards > 0:
             if cardButton.draw():
-                prisoner.isInJail = False
+                playerList[prisoner].isInJail = False
+                playerList[prisoner].getOutOfJailCards -= 1
                 choiceMade = True
-                prisoner.move()
+                playerList[prisoner].move()
 
 
 # HENRY'S PART
