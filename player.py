@@ -6,7 +6,7 @@ from datetime import datetime
 import pygame
 from draw import Button, draw_text
 
-random.seed(datetime.now())
+random.seed(datetime.now().timestamp())
 
 jailIndex = 10
 
@@ -26,10 +26,14 @@ class Player:
         self.isAI: bool = AI
 
     # For testing purposes
-    # def __init__(self, pieceIn: int, AI: bool, properties: list[tile.Property]):
+    # def __init__(
+    #     self, pieceIn: int, AI: bool, properties: list[tile.Property], location: int
+    # ):
     #     self.money: int = 1500  # The amount of money the player currently has
     #     self.properties: list[tile.Property] = properties  # properties play owns
-    #     self.location: int = 0  # Index value for the tile the player is currently
+    #     self.location: int = (
+    #         location  # Index value for the tile the player is currently
+    #     )
     #     self.getOutOfJailCards: int = (
     #         0  # The number of get out of jail free cards the player currently has
     #     )
@@ -88,15 +92,16 @@ class Player:
         self,
         board: List[tile.Tile],
         playerList,
-        screen: pygame.display,
-        font: pygame.font,
+        screen: pygame.surface.Surface,
+        font: pygame.font.Font,
         text_color: tuple[int, int, int],
     ):
+        print(self.location)
         dice = self.roll()
         if self.isInJail:
             # TODO Once we have pygame figured out, we need an option to pay $50 to leave jail early
             # TODO If a player has a get out of jail free card, they can use it to get out of jail
-            self.escapeJail(self, dice)
+            self.escapeJail(dice)
             return
 
         if self.doubleRolls == 3:
@@ -124,10 +129,10 @@ class Player:
     def landOnParse(
         self,
         effect: str,
-        board: tile.Tile,
+        board: list[tile.Tile],
         playerList,
-        screen: pygame.display,
-        font: pygame.font,
+        screen: pygame.surface.Surface,
+        font: pygame.font.Font,
         text_color: tuple[int, int, int],
     ) -> None:
         instructions = effect.split(":")
@@ -288,7 +293,7 @@ class Player:
                 railroadLocs = [5, 15, 25, 35]
                 currClosestLoc = len(board)
                 for loc in railroadLocs:
-                    if self.location - railroadLocs <= currClosestLoc:
+                    if self.location - loc <= currClosestLoc:
                         currClosestLoc = loc
 
                 self.location = currClosestLoc
@@ -316,7 +321,7 @@ class Player:
         self,
     ) -> None:  # Called when a player goes bankrupt, returns all of thier properties to the bank
         for OwnedItem in self.properties:
-            OwnedItem.Owner = None
+            OwnedItem.owner = None
         self.properties = []
 
     def toJail(self) -> None:
@@ -325,21 +330,25 @@ class Player:
 
     def displayNameMoney(
         self,
-        screen: pygame.display,
-        font: pygame.font,
+        screen: pygame.surface.Surface,
+        font: pygame.font.Font,
         text_color: tuple[int, int, int],
         screen_size: tuple[int, int],
         player_index: int,
     ) -> None:
         # Positions
-        money_position: tuple[int] = (screen_size[0] / 7, screen_size[1] / 1.36)
+        money_position: tuple[float, float] = (
+            screen_size[0] / 7,
+            screen_size[1] / 1.36,
+        )
 
-        player_position: tuple[int] = (screen_size[1] / 3, screen_size[0] / 7)
+        player_position: tuple[float, float] = (screen_size[1] / 3, screen_size[0] / 7)
 
         # Display
         draw_text(
             screen,
             f"Money: ${self.money}",
+            font,
             text_color,
             money_position[0],
             money_position[1],
@@ -347,6 +356,7 @@ class Player:
         draw_text(
             screen,
             f"Player {player_index + 1}'s turn",
+            font,
             text_color,
             player_position[0],
             player_position[1],
@@ -362,31 +372,33 @@ class Player:
     # Purpose: To display player name, properties, money, etc.
     def displayProperties(
         self,
-        screen: pygame.display,
+        screen: pygame.surface.Surface,
         text_color: tuple[int, int, int],
         player_index: int,
         property_locations: list[tuple[int, int]],
     ) -> None:
 
-        number_font: pygame.font = pygame.font.SysFont("arialblack", 20)
+        number_font: pygame.font.Font = pygame.font.SysFont("arialblack", 20)
 
         for property in self.properties:
             location: tuple[int, int] = property_locations[property.index]
 
             pygame.draw.circle(screen, text_color, location, 20)
 
-            number = number_font.render(f"{player_index + 1}", True, (0, 0, 0))
+            number: pygame.surface.Surface = number_font.render(
+                f"{player_index + 1}", True, (0, 0, 0)
+            )
             text_location: list[int] = [location[0] - 6, location[1] - 15]
 
             if 20 > property.index > 9:
                 number = pygame.transform.rotate(number, -90)
                 text_location[0] -= 6
                 text_location[1] += 8
-            elif 30 > property.index > 20:
+            elif 30 > property.index >= 20:
                 number = pygame.transform.rotate(number, 180)
                 text_location[0] += 1
                 text_location[1] += 2
-            elif property.index > 30:
+            elif property.index >= 30:
                 number = pygame.transform.rotate(number, 90)
                 text_location[0] -= 8
                 text_location[1] += 9
@@ -394,4 +406,61 @@ class Player:
             screen.blit(
                 number,
                 text_location,
+            )
+
+    def showLocation(
+        self,
+        screen: pygame.surface.Surface,
+        pieces: list[pygame.surface.Surface],
+        player_locations: list[list[tuple[int, int]]],
+        index: int,
+    ) -> None:
+        scaledImages: list[pygame.surface.Surface] = []
+
+        # print(self.location)
+
+        for piece in pieces:
+            scaledImages.append(pygame.transform.scale(piece, (40, 40)))
+
+        rotatedImage: pygame.surface.Surface = scaledImages[index]
+
+        if 20 > self.location > 9:
+            rotatedImage = pygame.transform.rotate(scaledImages[index], -90)
+        elif 30 > self.location >= 20:
+            rotatedImage = pygame.transform.rotate(scaledImages[index], 180)
+        elif self.location >= 30:
+            rotatedImage = pygame.transform.rotate(scaledImages[index], 90)
+
+        if self.isInJail:
+            if index == 0:
+                screen.blit(
+                    rotatedImage,
+                    (
+                        player_locations[self.location][index][0] + 45,
+                        player_locations[self.location][index][1],
+                    ),
+                )
+            elif index == 1:
+                screen.blit(
+                    rotatedImage,
+                    (
+                        player_locations[self.location][index][0] + 90,
+                        player_locations[self.location][index][1] - 60,
+                    ),
+                )
+            elif index == 2 or index == 3:
+                screen.blit(
+                    rotatedImage,
+                    (
+                        player_locations[self.location][index][0],
+                        player_locations[self.location][index][1] - 40,
+                    ),
+                )
+        else:
+            screen.blit(
+                rotatedImage,
+                (
+                    player_locations[self.location][index][0],
+                    player_locations[self.location][index][1],
+                ),
             )

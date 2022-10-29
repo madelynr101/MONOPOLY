@@ -1,71 +1,81 @@
-from abc import abstractmethod
+from abc import ABCMeta, abstractmethod
 from card import *
 from cardTypes import *
 
-class Tile():
-  def __init__(self, index) -> None:
-    self.index = index
 
-  @abstractmethod
-  def landedOn(self) -> str:
-    pass
+class Tile(metaclass=ABCMeta):
+    def __init__(self, index) -> None:
+        self.index = index
 
-  def getIndex(self) -> int:
-    return self.index
+    @abstractmethod
+    def landedOn(self) -> str:
+        pass
+
+    def getIndex(self) -> int:
+        return self.index
+
 
 class Property(Tile):
-  def __init__(self, index):
-    super().__init__(index)
-    self.owner = None
-    self.cost = 0
-    self.rent = 0
-    self.color = None
-    # self.houses = 0  # Stretch goals
-    # self.hotels = 0
-    # self.mortgaged = False
+    def __init__(self, index):
+        super().__init__(index)
+        self.owner = None
+        self.cost = 0
+        self.rent = 0
+        self.color = None
+        # self.houses = 0  # Stretch goals
+        # self.hotels = 0
+        # self.mortgaged = False
 
-  def __init__(self, index, cost, rent, color):
-    super().__init__(index)
-    self.owner = None
-    self.cost = cost
-    self.rent = rent
-    self.color = color
+    def __init__(self, index, cost, rent, color):
+        super().__init__(index)
+        self.owner = None
+        self.cost = cost
+        self.rent = rent
+        self.color = color
 
-  def landedOn(self, landingPlayer: int) -> str:
-    instructionToReturn = ""
+    def landedOn(self, landingPlayer: int) -> str:
+        instructionToReturn = ""
 
-    if self.owner == None:  # If no one owns this property
-        instructionToReturn = f"Purchase:{self.index}"  # Player will handle having enough money / if they want to but it
+        if self.owner == None:  # If no one owns this property
+            instructionToReturn = f"Purchase:{self.index}"  # Player will handle having enough money / if they want to but it
 
-    elif self.owner != landingPlayer:  # If property is owned, but not by current player (landing player owning property does nothing)
-      if self.color == "Railroad":  # Rent increases for each railroad owned
-        instructionToReturn = f"PayRailroad:{self.index}"
+        elif (
+            self.owner != landingPlayer
+        ):  # If property is owned, but not by current player (landing player owning property does nothing)
+            if self.color == "Railroad":  # Rent increases for each railroad owned
+                instructionToReturn = f"PayRailroad:{self.index}"
 
-      elif self.color == "Utility":  # Rent is based on dice roll, number times 4 if one utility owned, 10 if both
-        instructionToReturn = f"PayUtility:{self.index}"
+            elif (
+                self.color == "Utility"
+            ):  # Rent is based on dice roll, number times 4 if one utility owned, 10 if both
+                instructionToReturn = f"PayUtility:{self.index}"
 
-      else:  # Standard property
-        instructionToReturn = f"Pay:{self.index}"
+            else:  # Standard property
+                instructionToReturn = f"Pay:{self.index}"
 
-    return instructionToReturn
+        return instructionToReturn
 
-  def getRent(self) -> int:  # Return the rent value for the current property
-    return self.rent
+    def getRent(self) -> int:  # Return the rent value for the current property
+        return self.rent
 
-  def getCost(self) -> int:  # Return the amount of money needed to buy the property
-    return self.cost
+    def getCost(self) -> int:  # Return the amount of money needed to buy the property
+        return self.cost
 
-  def getOwner(self) -> int:  # Owner is an index value representing one of the players
-    return self.owner
+    def getOwner(
+        self,
+    ) -> int:  # Owner is an index value representing one of the players
+        return self.owner
 
-  def setOwner(self, newOwner: int) -> None: # A new player index is assigned to self.owner.
-    self.owner = newOwner
+    def setOwner(
+        self, newOwner: int
+    ) -> None:  # A new player index is assigned to self.owner.
+        self.owner = newOwner
 
-  def getColor(self) -> str:
-    return self.color
+    def getColor(self) -> str:
+        return self.color
 
-  # def addHouse(self) -> None:
-  #   pass
+    # def addHouse(self) -> None:
+    #   pass
 
 
 class Go(Tile):
@@ -113,21 +123,22 @@ class Chance(Tile):
         effect: CardReturn = chaCard.getEffect()
 
         if isinstance(effect.requirement, MoneyFlavor):
-          match effect.requirement.transfer:
-            case 'toOtherPlayers':
-              return f'PayAll:{effect.randomAmount}'
-            case 'fromOtherPlayers':
-              return f'ReceiveFromAll:{effect.randomAmount}'
+            match effect.requirement.transfer:
+                case "toOtherPlayers":
+                    return f"PayAll:{effect.randomAmount}"
+                case "fromOtherPlayers":
+                    return f"ReceiveFromAll:{effect.randomAmount}"
         elif isinstance(effect.requirement, MovementFlavor):
             match effect.requirement.direction:
-              case 'toJail':
-                return f'ToJail'
-              case 'forwards':
-                  return f'MoveAll:{effect.randomAmount}'
-              case 'backwards':
-                  return f'MoveAll:{-effect.randomAmount}'
+                case "toJail":
+                    return f"ToJail"
+                case "forwards":
+                    return f"MoveAll:{effect.randomAmount}"
+                case "backwards":
+                    return f"MoveAll:{-effect.randomAmount}"
         else:
-            return 'GetOutCard'
+            return "GetOutCard"
+
 
 class CommunityChest(Tile):
     def __init__(self, index) -> None:
@@ -138,21 +149,22 @@ class CommunityChest(Tile):
         effect: CardReturn = comCard.getEffect()
 
         if isinstance(effect.requirement, MoneyFlavor):
-          match effect.requirement.transfer:
-            case 'toBank':
-              return f'Charge:{effect.randomAmount}'
-            case 'fromBank':
-              return f'Charge:{-effect.randomAmount}'
+            match effect.requirement.transfer:
+                case "toBank":
+                    return f"Charge:{effect.randomAmount}"
+                case "fromBank":
+                    return f"Charge:{-effect.randomAmount}"
         elif isinstance(effect.requirement, MovementFlavor):
             match effect.requirement.direction:
-              case 'toRailroad':
-                return 'ToRailroad'
-              case 'backToGo':
-                return f'Move:0'
-              case 'freeParking':
-                return f'Move:20'
+                case "toRailroad":
+                    return "ToRailroad"
+                case "backToGo":
+                    return f"Move:0"
+                case "freeParking":
+                    return f"Move:20"
         else:
-            return 'GetOutCard'
+            return "GetOutCard"
+
 
 class IncomeTax(Tile):
     def __init__(self, index) -> None:
@@ -160,9 +172,7 @@ class IncomeTax(Tile):
 
     def landedOn(self) -> str:
         # Player pays $200 to bank
-        return (
-            "Charge:200"
-        )  # I do believe this pays $200 to the bank, the pay function is specifically for properties
+        return "Charge:200"  # I do believe this pays $200 to the bank, the pay function is specifically for properties
 
 
 class LuxuryTax(Tile):
@@ -174,13 +184,13 @@ class LuxuryTax(Tile):
         return "Charge:100"  # Pay $100 to bank
 
 
-def main() -> None:
+def tileTest() -> None:
     for _ in range(10):
-      chanceTile: Chance = Chance(0)
-      communityTile: CommunityChest = CommunityChest(1)
+        chanceTile: Chance = Chance(0)
+        communityTile: CommunityChest = CommunityChest(1)
 
-      print(f'{chanceTile.landedOn()=}, {communityTile.landedOn()=}')
+        print(f"{chanceTile.landedOn()=}, {communityTile.landedOn()=}")
 
 
 if __name__ == "__main__":
-    main()
+    tileTest()

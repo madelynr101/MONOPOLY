@@ -13,7 +13,7 @@ import player
 pygame.init()
 
 # Default font
-font: pygame.font = pygame.font.SysFont("arialblack", 40)
+font: pygame.font.Font = pygame.font.SysFont("arialblack", 40)
 
 # Default text color
 TEXT_COL: tuple[int, int, int] = (0, 0, 0)
@@ -67,6 +67,55 @@ PROPERTY_LOCATIONS: list[tuple[int, int]] = [
     (940, 828),
 ]
 
+PLAYER_LOCATIONS: list[list[tuple[int, int]]] = [
+    [(870, 880), (940, 880), (870, 945), (940, 945)],
+    [(785, 880), (825, 880), (785, 945), (825, 945)],
+    [(705, 880), (745, 880), (705, 945), (745, 945)],
+    [(622, 880), (663, 880), (622, 945), (663, 945)],
+    [(540, 880), (581, 880), (540, 945), (581, 945)],
+    [(458, 880), (499, 880), (458, 945), (499, 945)],
+    [(376, 880), (417, 880), (376, 945), (417, 945)],
+    [(294, 880), (335, 880), (294, 945), (335, 945)],
+    [(212, 880), (253, 880), (212, 945), (253, 945)],
+    [(130, 880), (171, 880), (130, 945), (171, 945)],
+    [(0, 870), (0, 930), (40, 960), (90, 960)],
+    [(90, 787), (90, 827), (0, 787), (0, 827)],
+    [(90, 705), (90, 745), (0, 705), (0, 745)],
+    [(90, 623), (90, 663), (0, 623), (0, 663)],
+    [(90, 541), (90, 581), (0, 541), (0, 581)],
+    [(90, 459), (90, 499), (0, 459), (0, 499)],
+    [(90, 377), (90, 417), (0, 377), (0, 417)],
+    [(90, 295), (90, 335), (0, 295), (0, 335)],
+    [(90, 213), (90, 253), (0, 213), (0, 253)],
+    [(90, 131), (90, 171), (0, 131), (0, 171)],
+    [(90, 80), (0, 80), (90, 10), (0, 10)],
+    [(175, 80), (134, 80), (175, 10), (134, 10)],
+    [(257, 80), (216, 80), (257, 10), (216, 10)],
+    [(339, 80), (298, 80), (339, 10), (298, 10)],
+    [(421, 80), (380, 80), (421, 10), (380, 10)],
+    [(503, 80), (462, 80), (503, 10), (462, 10)],
+    [(585, 80), (544, 80), (585, 10), (544, 10)],
+    [(667, 80), (626, 80), (667, 10), (626, 10)],
+    [(749, 80), (708, 80), (749, 10), (708, 10)],
+    [(831, 80), (790, 80), (831, 10), (790, 10)],
+    [(870, 80), (870, 10), (950, 80), (950, 10)],
+    [(870, 175), (870, 134), (950, 175), (950, 134)],
+    [(870, 257), (870, 216), (950, 257), (950, 216)],
+    [(870, 339), (870, 298), (950, 339), (950, 298)],
+    [(870, 421), (870, 380), (950, 421), (950, 380)],
+    [(870, 503), (870, 462), (950, 503), (950, 462)],
+    [(870, 585), (870, 544), (950, 585), (950, 544)],
+    [(870, 667), (870, 626), (950, 667), (950, 626)],
+    [(870, 749), (870, 708), (950, 749), (950, 708)],
+    [(870, 831), (870, 790), (950, 831), (950, 790)],
+]
+
+PIECE_IMAGES: list[pygame.surface.Surface] = [
+    pygame.image.load("Images/gauntlet.png"),
+    pygame.image.load("Images/cape.png"),
+    pygame.image.load("Images/batmobile.png"),
+    pygame.image.load("Images/bat.png"),
+]
 
 # Purpose: To pick how many players and / or AI's there are within the game
 def choose_people(screen, human_player, AI_player, amnt_players, players, fillerList):
@@ -176,7 +225,7 @@ def jail(prisoner: player.Player):
                 prisoner.isInJail = False
                 choiceMade = True
                 prisoner.move()
-        if prisoner.getOutOfJail > 0:
+        if prisoner.getOutOfJailCards > 0:
             if cardButton.draw():
                 prisoner.isInJail = False
                 choiceMade = True
@@ -185,16 +234,18 @@ def jail(prisoner: player.Player):
 
 # HENRY'S PART
 # Purpose: To choose the character for each person, either human or AI.
-def player_loop(screen: pygame.display, playerList: list[player.Player], playersChosen):
+def player_loop(
+    screen: pygame.surface.Surface, playerList: list[player.Player], playersChosen
+):
     availablePieces = [True] * 4
     while playersChosen < len(playerList):
         print(playersChosen)
         screen.fill((255, 255, 255))
         # image for character selection
-        gauntlet = pygame.image.load("Images/gauntlet.png")
-        cape = pygame.image.load("Images/cape.png")
-        batcar = pygame.image.load("Images/batmobile.png")
-        bat = pygame.image.load("Images/bat.png")
+        gauntlet = PIECE_IMAGES[0]
+        cape = PIECE_IMAGES[1]
+        batcar = PIECE_IMAGES[2]
+        bat = PIECE_IMAGES[3]
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -210,13 +261,14 @@ def player_loop(screen: pygame.display, playerList: list[player.Player], players
             150,
             100,
         )
+
         gauntletButton = Button(150, 500, gauntlet, (100, 100))
         capeButton = Button(350, 500, cape, (100, 100))
         batcarButton = Button(550, 500, batcar, (100, 100))
         batButton = Button(750, 500, bat, (100, 100))
         buttons = [gauntletButton, capeButton, batcarButton, batButton]
 
-        for i in range(4):
+        for i in range(len(PIECE_IMAGES)):
             if availablePieces[i]:
                 if buttons[i].draw(screen):
                     availablePieces[i] = False
@@ -283,7 +335,9 @@ def load_tiles(board):
 def main():
     # setup main screen
 
-    screen: pygame.display = pygame.display.set_mode((1000, 1000), pygame.RESIZABLE)
+    screen: pygame.surface.Surface = pygame.display.set_mode(
+        (1000, 1000), pygame.RESIZABLE
+    )
     area = screen.get_rect()
     pygame.display.set_caption("Monopoly")
     clock = pygame.time.Clock()
@@ -309,7 +363,7 @@ def main():
     load_tiles(board)
 
     # player array:
-    playerList = []
+    playerList: list[player.Player] = []
 
     # get how many players
     players = 4
@@ -327,7 +381,7 @@ def main():
     # change when giving players piece selection if we do that
     for i in range(players):
         # For testing purposes
-        # playerList.append(player.Player(i, True, playerProperties[i]))
+        # playerList.append(player.Player(i, True, playerProperties[i], 39))
         playerList.append(
             player.Player(i, True)
         )  # Create a player in the list, just incrementing the piece they are
@@ -347,8 +401,8 @@ def main():
     # if playersChosen < players:
     #   player_loop(screen, playerList, playersChosen)
 
-    # endTurnImage = pygame.image.load("Images/endTurn.png")
-    # endTurnButton = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
+    endTurnImage = pygame.image.load("Images/endTurn.png")
+    endTurnButton = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
 
     # Main loop:
     while gameRunning:
@@ -367,18 +421,10 @@ def main():
                         pygame.quit()
                         exit()
 
-                choose_people(
-                    screen, human_player, AI_player, amnt_players, players, fillerList
-                )
-
-                # screen.blit(main_surface, (0, 0))
-
-                # playerList[i].displayAmounts(
-                # screen, font, PLAYER_COLS[i], (width, height), i
+                # choose_people(
+                #     screen, human_player, AI_player, amnt_players, players, fillerList
                 # )
 
-                # if endTurnButton.draw(screen):
-                #     turnFinished = True
                 screen.blit(main_surface, (0, 0))
 
                 playerList[i].displayNameMoney(
@@ -391,6 +437,10 @@ def main():
                         PLAYER_COLS[j],
                         j,
                         PROPERTY_LOCATIONS,
+                    )
+
+                    playerList[j].showLocation(
+                        screen, PIECE_IMAGES, PLAYER_LOCATIONS, j
                     )
 
                 if endTurnButton.draw(screen):
