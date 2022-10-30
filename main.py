@@ -119,10 +119,9 @@ PIECE_IMAGES: list[pygame.surface.Surface] = [
 
 
 # Purpose: To pick how many players and / or AI's there are within the game
-def choose_people(screen, human_player, AI_player, amnt_players, players, fillerList, AI_person):
+def choose_people(screen, player_type, amnt_players, players, fillerList, AI_person, person_type):
     # whether a person has picked how many players they want, AI or human 
-    AI_chosen = False 
-    human_chosen = False 
+    chosen = False 
 
     # images for player selection:
     zero = pygame.image.load("Images/0.png")
@@ -131,7 +130,15 @@ def choose_people(screen, human_player, AI_player, amnt_players, players, filler
     three = pygame.image.load("Images/3.png")
     four = pygame.image.load("Images/4.png")
 
-    while AI_chosen != True:
+    zeroButton = Button(150, 500, zero, (80, 80))
+    oneButton = Button(350, 500, one, (80, 80))
+    twoButton = Button(550, 500, two, (80, 80))
+    threeButton = Button(750, 500, three, (80, 80))
+    fourButton = Button(950, 500, four, (80, 80))
+    buttons = [zeroButton, oneButton, twoButton, threeButton, fourButton]
+
+    # Choose amount of AI players:
+    while chosen != True:
         screen.fill((255, 255, 255))
 
         for event in pygame.event.get():
@@ -142,28 +149,23 @@ def choose_people(screen, human_player, AI_player, amnt_players, players, filler
 
         draw_text(
             screen,
-            f"How many AI players do you want 0-4?",
+            f"How many {person_type} players do you want 0-4?",
             font,
             TEXT_COL,
             20,
             20,
         )
 
-        zeroButton = Button(150, 500, zero, (80, 80))
-        oneButton = Button(350, 500, one, (80, 80))
-        twoButton = Button(550, 500, two, (80, 80))
-        threeButton = Button(750, 500, three, (80, 80))
-        fourButton = Button(950, 500, four, (80, 80))
-        buttons = [zeroButton, oneButton, twoButton, threeButton, fourButton]
-
+        # player buttons output to screen and data collected
         for i in range(len(buttons)):
             buttons[i].draw(screen)
             if buttons[i].clicked:
-                AI_player = i
-                AI_chosen = True
-
-        if AI_chosen:
-            print(AI_player)
+                player_type = i
+                chosen = True
+                
+        if chosen:
+            print(player_type)
+            break
 
         pygame.display.update()
 
@@ -332,7 +334,6 @@ def load_tiles(board):
 
 def main():
     # setup main screen
-
     screen: pygame.surface.Surface = pygame.display.set_mode(
         (1000, 1000), pygame.RESIZABLE
     )
@@ -388,13 +389,23 @@ def main():
     #  screen.blit(tileSurface, (00, 100 * i))
 
     # amount of human vs AI players playing
-    human_player = 0
-    AI_player = 0
     AI_person = False
-    amnt_players = human_player + AI_player
     fillerList = []
-    # if amnt_players < players:
-    # choose_people(screen, human_player, AI_player, amnt_players, players)
+    person_type = ""
+    AI_player = 0 
+    human_player = 0 
+
+    amnt_players = human_player + AI_player
+
+    AI_player = choose_people(
+        screen, AI_player, amnt_players, players, fillerList, AI_person, person_type = "AI"
+    )
+
+    human_player = choose_people(
+        screen, human_player, amnt_players, players, fillerList, AI_person, person_type = "human"
+    )
+
+    
 
     playersChosen = 0
     # if playersChosen < players:
@@ -423,10 +434,6 @@ def main():
                         gameRunning = False
                         pygame.quit()
                         exit()
-
-                choose_people(
-                    screen, human_player, AI_player, amnt_players, players, fillerList, AI_person
-                )
 
                 screen.blit(main_surface, (0, 0))
 
