@@ -3,6 +3,7 @@ from turtle import width
 import pygame
 from sys import exit
 from draw import Button, draw_text
+import time
 
 # Import backend functions for components of the game.
 import tile
@@ -17,6 +18,8 @@ font: pygame.font.Font = pygame.font.SysFont("arialblack", 40)
 
 # Default text color
 TEXT_COL: tuple[int, int, int] = (0, 0, 0)
+
+# Each player has a unique text color
 PLAYER_COLS: list[tuple[int, int, int]] = [
     (224, 49, 22),
     (42, 176, 12),
@@ -24,6 +27,7 @@ PLAYER_COLS: list[tuple[int, int, int]] = [
     (209, 155, 46),
 ]
 
+# The locations to draw the bought property markers
 PROPERTY_LOCATIONS: list[tuple[int, int]] = [
     (0, 0),
     (827, 940),
@@ -67,6 +71,7 @@ PROPERTY_LOCATIONS: list[tuple[int, int]] = [
     (940, 828),
 ]
 
+# The locations to draw the player icons on each space
 PLAYER_LOCATIONS: list[list[tuple[int, int]]] = [
     [(870, 880), (940, 880), (870, 945), (940, 945)],
     [(785, 880), (825, 880), (785, 945), (825, 945)],
@@ -119,7 +124,7 @@ PIECE_IMAGES: list[pygame.surface.Surface] = [
 
 
 # Purpose: To pick how many players and / or AI's there are within the game
-def choose_people(screen, player_type, amnt_players, players, fillerList, AI_person, person_type):
+def chooseAIPlayers(screen):
     # whether a person has picked how many players they want, AI or human 
     chosen = False 
 
@@ -130,17 +135,18 @@ def choose_people(screen, player_type, amnt_players, players, fillerList, AI_per
     three = pygame.image.load("Images/3.png")
     four = pygame.image.load("Images/4.png")
 
-    zeroButton = Button(150, 500, zero, (80, 80))
-    oneButton = Button(350, 500, one, (80, 80))
-    twoButton = Button(550, 500, two, (80, 80))
-    threeButton = Button(750, 500, three, (80, 80))
-    fourButton = Button(950, 500, four, (80, 80))
+    zeroButton = Button(50, 500, zero, (80, 80))
+    oneButton = Button(250, 500, one, (80, 80))
+    twoButton = Button(450, 500, two, (80, 80))
+    threeButton = Button(650, 500, three, (80, 80))
+    fourButton = Button(850, 500, four, (80, 80))
     buttons = [zeroButton, oneButton, twoButton, threeButton, fourButton]
 
     # Choose amount of AI players:
     while chosen != True:
         screen.fill((255, 255, 255))
 
+        # Quit if the X button is pressed
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 gameRunning = False
@@ -149,7 +155,7 @@ def choose_people(screen, player_type, amnt_players, players, fillerList, AI_per
 
         draw_text(
             screen,
-            f"How many {person_type} players do you want 0-4?",
+            f"How many AI players do you want 0-4?",
             font,
             TEXT_COL,
             20,
@@ -160,33 +166,35 @@ def choose_people(screen, player_type, amnt_players, players, fillerList, AI_per
         for i in range(len(buttons)):
             buttons[i].draw(screen)
             if buttons[i].clicked:
-                player_type = i
-                chosen = True
-                
-        if chosen:
-            print(player_type)
-            break
+                return i  # Returns the button pressed, the number of AI player we want 
 
         pygame.display.update()
 
 
 # Matt Chenot
 # Purpose: To display dice roll screen and the dice after the roll
-def roll():
-    # A roll button on the main bit that players press to roll
-    # Doing this brings up a pop up with that shows the faces of the two dice they rolled
-    # There is then a button to close this screen
-
+def rollDisplay(screen: pygame.surface.Surface, text_color: tuple[int, int, int], screen_size: tuple[int, int], currentPlayer: player):
     # NOTE: think on moving this to the roll function, that way the popup can show up for the jail stuff to
+    # NOTE: I have yet to figure out the more complicated version of this, so here is a simple one for now
 
-    dice1 = pygame.images.load("Images/dice1.png")
-    dice2 = pygame.images.load("Images/dice2.png")
-    dice3 = pygame.images.load("Images/dice3.png")
-    dice4 = pygame.images.load("Images/dice4.png")
-    dice5 = pygame.images.load("Images/dice5.png")
-    dice6 = pygame.images.load("Images/dice6.png")
+    diceImageList = []
+    scaledDiceImageList = []
+    diceImageList.append(pygame.image.load("Images/dice1.png"))
+    diceImageList.append(pygame.image.load("Images/dice2.png"))
+    diceImageList.append(pygame.image.load("Images/dice3.png"))
+    diceImageList.append(pygame.image.load("Images/dice4.png"))
+    diceImageList.append(pygame.image.load("Images/dice5.png"))
+    diceImageList.append(pygame.image.load("Images/dice6.png"))
 
-    pass
+    for image in diceImageList:  # Scale the images to be smaller
+        scaledDiceImageList.append(pygame.transform.scale(image, (80, 80)))
+
+    smallerFont: pygame.font.Font = pygame.font.SysFont("arialblack", 25)
+    
+    # Does the actual display
+    draw_text(screen, f"Roll:", smallerFont, text_color, screen_size[0] / 1.73, screen_size[1] / 2)
+    screen.blit(scaledDiceImageList[currentPlayer.getLastRoll()[0]-1], (screen_size[0] / 1.55, screen_size[1] / 2))
+    screen.blit(scaledDiceImageList[currentPlayer.getLastRoll()[1]-1], (screen_size[0] / 1.35, screen_size[1] / 2))
 
 
 # Henry
@@ -203,11 +211,11 @@ def get_paid():
 
 # Ethan Moore
 # Purpose: Show when someone gets sent to jail, chose to attempt a roll or pay $50 to get out
-def jail(prisoner: int):
+def jail(prisoner: int):  # NOTE: This is currently never called
     choiceMade = False
-    escapeImage = pygame.images.load("Images/escapeButton.png")
-    payImage = pygame.images.load("Images/payButton.png")
-    useCardImage = pygame.images.load("Images/cardButton.png")
+    escapeImage = pygame.image.load("Images/escapeButton.png")
+    payImage = pygame.image.load("Images/payButton.png")
+    useCardImage = pygame.image.load("Images/cardButton.png")
     # TODO: ensure buttons properly display
     while not choiceMade:
         draw_text(screen, f"How do you want to leave jail?", font, TEXT_COL, 20, 20)
@@ -233,10 +241,10 @@ def jail(prisoner: int):
 
 
 # HENRY'S PART
-# Purpose: To choose the character for each person, either human or AI.
-def player_loop(
-    screen: pygame.surface.Surface, playerList: list[player.Player], playersChosen
-):
+# Purpose: To choose the piece for each player
+def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]):
+    playersChosen = 0
+    
     availablePieces = [True] * 4
     while playersChosen < len(playerList):
         print(playersChosen)
@@ -282,6 +290,7 @@ def pick_piece(playerIndex, pieceIndex):
     pass
 
 
+# Tile types and locations are hardcoded, this puts them into the passed board
 def load_tiles(board):
     # Regular board is: Go, brown, community chest, brown, income tax, railroad, light blue, chance, light blue light blue, jail
     # Purple, utilities, purple, purple, railroad, orange, community chest, orange, orange, free parking
@@ -351,22 +360,16 @@ def main():
     print("Width " + str(width))
 
     gameRunning = True
-    chosen = True
-    jailIndex = 10
-
-    # bank instantiation
 
     # put tiles in this array:
     board = []
-
     load_tiles(board)
 
     # player array:
     playerList: list[player.Player] = []
 
-    # get how many players
-    players = 4
-
+    # Always 4 players, always start on turn 1
+    numPlayers = 4
     turnCount = 1
 
     # For testing purposes
@@ -378,99 +381,82 @@ def main():
     # ]
 
     # change when giving players piece selection if we do that
-    for i in range(players):
+    for i in range(numPlayers):
         # For testing purposes
         # playerList.append(player.Player(i, True, playerProperties[i], 39))
-        playerList.append(
-            player.Player(i, True)
-        )  # Create a player in the list, just incrementing the piece they are
+        playerList.append(player.Player(i, False))  # Create a player in the list, just incrementing the piece they are
 
     # for i in range(len(board)):
     #  screen.blit(tileSurface, (00, 100 * i))
 
-    # amount of human vs AI players playing
-    AI_person = False
-    fillerList = []
-    person_type = ""
-    AI_player = 0 
-    human_player = 0 
+    # Figure out how many AI players there will be
+    numAIPlayers = chooseAIPlayers(screen)
 
-    amnt_players = human_player + AI_player
-
-    AI_player = choose_people(
-        screen, AI_player, amnt_players, players, fillerList, AI_person, person_type = "AI"
-    )
-
-    human_player = choose_people(
-        screen, human_player, amnt_players, players, fillerList, AI_person, person_type = "human"
-    )
+    # Mark the selected players as AI
+    # This works from the end, so if you select 2 AI players, then players 3 and 4 will be AI
+    for i in range(numAIPlayers):
+        playerList[numPlayers - i - 1].setIsAI(True)  
 
     
+    choosePieces(screen, playerList)  # Chose which player will be which piece
 
-    playersChosen = 0
-    # if playersChosen < players:
-    #   player_loop(screen, playerList, playersChosen)
-
+    # Button prep
     endTurnImage = pygame.image.load("Images/endTurn.png")
     endTurnButton = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
 
     rollImage = pygame.image.load("Images/rollButton.png")
     rollButton = Button(width / 2.75, height / 1.26, rollImage, (200, 50))
 
-    # Main loop:
+    # Main loop (This is the actual game part):
     while gameRunning:
-        # TESTING LOOP
-        # Quits the game whenever the application window has been closed.
-
         print(f"Turn: {turnCount}")
 
-        for i in range(len(playerList)):
+        for i in range(len(playerList)):  # For each player
             turnFinished = False
             playerList[i].setIsRollingDone(False)  # Reset dice rolls at the start of each players turn
 
-            while not turnFinished:
+            while not turnFinished:  # Loop until the end turn button is pressed
                 for e in pygame.event.get():
-                    if e.type == pygame.QUIT:
+                    if e.type == pygame.QUIT:  # Close pygame if the X is clicked
                         gameRunning = False
                         pygame.quit()
                         exit()
 
-                screen.blit(main_surface, (0, 0))
+                screen.blit(main_surface, (0, 0))  # Displays the board
 
-                playerList[i].displayNameMoney(
-                    screen, font, PLAYER_COLS[i], (width, height), i
-                )
+                playerList[i].displayNameMoney(screen, font, PLAYER_COLS[i], (width, height), i)  # Display the current player and how much money they have
 
-                for j in range(len(playerList)):
-                    playerList[j].displayProperties(
-                        screen,
-                        PLAYER_COLS[j],
-                        j,
-                        PROPERTY_LOCATIONS,
-                    )
+                # Update display to show current board state
+                for j in range(len(playerList)):  
+                    playerList[j].displayProperties(screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS)  # Display who ownes which property
+                    playerList[j].showLocation(screen, PIECE_IMAGES, PLAYER_LOCATIONS, playerList[j].piece)  # Display all of the players pieces on the board
 
-                    playerList[j].showLocation(
-                        screen, PIECE_IMAGES, PLAYER_LOCATIONS, j
-                    )
-
-                if endTurnButton.draw(screen):  # Button to pass the turn
-                    turnFinished = True
-
-                # A test that actually does what it's suppost to for once
-                # closeImage = pygame.image.load("Images/closeButton.png")
-                # closeButton = Button(500, 500, closeImage, (200, 50))
-                # if closeButton.draw(screen):
-                    # pass
+                if playerList[i].getIsAI() == False:  # Don't draw the button for AI players
+                    if endTurnButton.draw(screen):  # Button to pass the turn
+                        turnFinished = True
 
                 # Rolling
-                if playerList[i].getIsRollingDone() == False: # If the player can roll
-                    if rollButton.draw(screen):  
-                        playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])  # The visuals for the dice are done in the roll function since that is also called during jail stuff
+                if playerList[i].getIsRollingDone() == False and playerList[i].getIsAI() == False: # If the player can roll not an AI
+                    if rollButton.draw(screen):  # Draw a button players can press to roll
+                        playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])
+
+                elif playerList[i].getIsAI() == True:  # If the player is AI, have them roll until they can't and end thier turn
+                    playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])
+
+                    if playerList[i].getIsRollingDone() == True:  # This means that an AI player will always roll again if they get doubles 
+                        turnFinished = True
+
+                if playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0:  # These condtions mean player has rolled at least once this turn
+                    rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled
 
                 pygame.display.update()
                 clock.tick(60)
-        turnCount += 1
 
+                # If the current player is AI, hang after thier turn for a couple seconds so everyone else can see what they did
+                if playerList[i].getIsAI() == True:
+                    time.sleep(2)
+
+        turnCount += 1
 
 if __name__ == "__main__":
     main()

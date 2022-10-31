@@ -1,4 +1,7 @@
-class Bank():  # NOTE This file should maybe be delted as it doesn't actually do anything
+# A file that I'm pretty sure does absolutly nothing
+# TODO: figure out if we can delete this
+
+class Bank():
     def __init__(self, numHouses, numHotels):
         self.numHouses = numHouses            # Number of houses available to players
         self.numHotels = numHotels            # Number of hotels available to players
