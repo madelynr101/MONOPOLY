@@ -426,15 +426,6 @@ def main():
 
                 playerList[i].displayNameMoney(screen, font, PLAYER_COLS[i], (width, height), i)  # Display the current player and how much money they have
 
-                # Update display to show current board state
-                for j in range(len(playerList)):  
-                    playerList[j].displayProperties(screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS)  # Display who ownes which property
-                    playerList[j].showLocation(screen, PIECE_IMAGES, PLAYER_LOCATIONS, playerList[j].piece)  # Display all of the players pieces on the board
-
-                if playerList[i].getIsAI() == False:  # Don't draw the button for AI players
-                    if endTurnButton.draw(screen):  # Button to pass the turn
-                        turnFinished = True
-
                 # Rolling
                 if playerList[i].getIsRollingDone() == False and playerList[i].getIsAI() == False: # If the player can roll not an AI
                     if rollButton.draw(screen):  # Draw a button players can press to roll
@@ -448,6 +439,15 @@ def main():
 
                 if playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0:  # These condtions mean player has rolled at least once this turn
                     rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled
+
+                # Update display to show current board state
+                for j in range(len(playerList)):  
+                    playerList[j].displayProperties(screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS)  # Display who ownes which property
+                    playerList[j].showLocation(screen, PIECE_IMAGES, PLAYER_LOCATIONS, playerList[j].piece)  # Display all of the players pieces on the board
+
+                if playerList[i].getIsAI() == False:  # Don't draw the button for AI players
+                    if endTurnButton.draw(screen):  # Button to pass the turn
+                        turnFinished = True
 
                 pygame.display.update()
                 clock.tick(60)
