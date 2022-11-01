@@ -10,20 +10,21 @@ random.seed(datetime.now().timestamp())
 
 jailIndex = 10
 
-
 class Player:
     def __init__(self, pieceIn: int, AI: bool):
         self.money: int = 1500  # The amount of money the player currently has
         self.properties: list[tile.Property] = []  # properties play owns
         self.location: int = 0  # Index value for the tile the player is currently
-        self.getOutOfJailCards: int = 0 # The number of get out of jail free cards the player currently has
+        self.getOutOfJailCards: int = 0  # The number of get out of jail free cards the player currently has
+        self.turnsInJail: int = 0;  # Turns in jail, players automatically get out after three turns
         self.isInJail: bool = False  # Is the player currently in jail
         self.isRollingDone: bool = False  # Set to true once the player can no longer roll during thier current turn
         self.doubleRolls: int = 0  # Increases whenever the player rolls doubles, set back to zero when they don't
-        self.lastRoll: list[int, int] = []  # The values of the players last roll, used to draw the dice on screen
+        self.lastRoll: tuple[int, int] = []  # The values of the players last roll, used to draw the dice on screen
         self.piece: int = pieceIn  # Index of the players piece
         self.isBankrupt: bool = False  # Is the player currently bankrupt
         self.isAI: bool = AI
+        self.choosingProperty: bool = False
 
     # For testing purposes
     # def __init__(
@@ -79,13 +80,10 @@ class Player:
             self.RemoveProperties()
 
     # Simulate dice roll, two random numbers 1-6, returns the rolled values in a list
-    # TODO Fix what changing this function call probably broke in jail
-    def roll(self, screen: pygame.surface.Surface) -> List[int]:
+    def roll(self) -> tuple[int, int]:
         diceOne = random.randint(1, 6)
         diceTwo = random.randint(1, 6)
         self.lastRoll = [diceOne, diceTwo]  # Needed to display the correct dice elsewhere
-
-        # print("Rolled: " + str(diceOne) + " & " + str(diceTwo))  # High quality viusal interface
 
         return [diceOne, diceTwo]
 
@@ -97,9 +95,9 @@ class Player:
         screen: pygame.surface.Surface,
         font: pygame.font.Font,
         text_color: tuple[int, int, int],
-    ):
+    ) -> None:
         print(self.location)
-        dice = self.roll(screen)
+        dice: tuple[int, int] = self.roll()
 
         # Rolling has a completly diffrent context in jail, hanled in escapeJail()
         if self.isInJail:
@@ -138,13 +136,15 @@ class Player:
 
         # Effects of space landed on
         if isinstance(board[self.location], tile.Property):
-            effect = board[self.location].landedOn(self.piece)
+            effect: str = board[self.location].landedOn(self.piece)
         else:
-            effect = board[self.location].landedOn()
+            effect: str = board[self.location].landedOn()
+        
+        if isinstance(board[self.location], tile.Chance) or isinstance(board[self.location], tile.CommunityChest):
+            pass
 
         self.landOnParse(effect, board, playerList, screen, font, text_color)
-        # TODO: Remove test print
-        print(f"player {self.piece} has reached space {self.location}")
+        
 
     # Spaces return a formated string regarding what they do, this function parses those strings and preforms the desired action
     # Strings are of the format 'Action:Value' 
@@ -260,48 +260,18 @@ class Player:
 
             # Purchase the unowned property at given index
             case "Purchase":  # Note that instruction here reffers to the inedex of the tile being purchased
-                
                 # This block crashse the program if run, commenting it out for testing
                 # TODO Make it not crash
-                '''if not self.isAI:  # Players can chose wheather to buy property or not
-                    decisionMade = False
+                if not self.isAI:  # Players can chose wheather to buy property or not
+                    self.choosingProperty = True
+                else:  # This is what the AI does, always buy if you have the money
+                    if board[instructionValue].getCost() < self.money:  # Force buy property if AI can afford it
+                        self.money -= board[instructionValue].getCost()
+                        self.properties.append(board[instructionValue])
+                        board[instructionValue].setOwner(self.piece)
 
-                    yes = pygame.image.load("Images/yes.png")
-                    no = pygame.image.load("Images/no.png")
-
-                    while not decisionMade:
-                        draw_text(
-                            screen,
-                            f"Do you want to purchase this property?",
-                            font,
-                            text_color,
-                            10,
-                            10,
-                        )
-
-                        # TODO: Get pictures of a 'Yes' or 'No.'
-                        yesButton = Button(50, 100, yes, (20, 20))
-                        noButton = Button(100, 100, no, (20, 20))
-
-                        if not decisionMade:
-                            if yesButton.draw(screen):
-                                decisionMade = True
-                                purchaseProperty = True
-                                # Player buys property here.
-
-                            # Player does not buy property, the screen closes.
-                            elif noButton.draw(screen):
-                                decisionMade = True
-                                purchaseProperty = False
-
-                else:  # This is what the AI does, always buy if you have the money'''
-                if board[instructionValue].getCost() < self.money:  # Force buy property if AI can afford it
-                    self.money -= board[instructionValue].getCost()  # TODO Make purchasing optional
-                    self.properties.append(board[instructionValue])
-                    board[instructionValue].setOwner(self.piece)
-
-                else:
-                    print("Can't afford property!")
+                #else:
+                 #   print("Can't afford property!")
 
             # Move number of spaces
             case "Move":
@@ -352,18 +322,23 @@ class Player:
                             if player.location >= len(board):  # $200 for passing go
                                 player.location = 0
                                 player.bankTransaction(200)
-
-    # TODO: I thought there was smilar logic for jail escaping elsewhere, investigate
+    
+    # Seeing the player is able to leave jail this turn 
     def escapeJail(self, dice: List[int]) -> None:
         if dice[0] == dice[1]:
             self.isInJail = False
+            self.turnsInJail = 0
+
+        self.turnsInJail += 1  # Increment at the end of each turn in jail
+
+        if self.turnsInJail > 3:  # Automatically leave jail after third turn if you are still in
+            self.isInJail = False
+            self.turnsInJail = 0
 
         self.isRollingDone = True  # One roll per turn in jail, regardless of if you roll doubles and get out or not
 
     # Called when a player goes bankrupt, returns all of thier properties to the bank
-    def RemoveProperties(
-        self,
-    ) -> None:  
+    def RemoveProperties(self) -> None:  
         for OwnedItem in self.properties:
             OwnedItem.owner = None
         self.properties = []
@@ -407,13 +382,21 @@ class Player:
             player_position[0],
             player_position[1],
         )
-        # screen.blit(
-        #     font.render(f"Money: ${self.money}", True, text_color), money_position
-        # )
-        # screen.blit(
-        # font.render(f"Player {player_index + 1}'s turn", True, text_color),
-        # player_position,
-        # )
+
+    def AIJailDecision(self) -> None:
+        if(self.getOutOfJailCards > 0):
+            self.getOutOfJailCards -= 1
+            self.isInJail = False
+            self.move()
+
+        elif(self.money > 50):
+            self.bankTransaction(-50)
+            self.isInJail = False
+            self.turnsInJail = 0
+            self.move()
+
+        else:
+            self.move()
 
     # Purpose: To display player name, properties, money, etc.
     def displayProperties(
@@ -465,9 +448,10 @@ class Player:
         player_locations: list[list[tuple[int, int]]],
         index: int,
     ) -> None:
-        scaledImages: list[pygame.surface.Surface] = []
+        if self.isBankrupt:
+            return
 
-        # print(self.location)
+        scaledImages: list[pygame.surface.Surface] = []
 
         # Scale the pieces down so they can all fit on one square
         for piece in pieces:
@@ -530,19 +514,33 @@ class Player:
     def getIsAI(self) -> bool:  
         return self.isAI
 
+    # Returns if a player is bankrupt
+    def getIsBankrupt(self) -> bool:
+        return self.isBankrupt
+
+    # Returns if a player is in jail
+    def getIsInJail(self) -> bool:
+        return self.isInJail
+
     # Return # of times player has rolled dobules this turn
     def getDoubleRolls(self) -> int:  
         return self.doubleRolls
 
     # Return the players last roll
-    def getLastRoll(self) -> list[int, int]:  
+    def getLastRoll(self) -> tuple[int, int]:  
         return self.lastRoll
 
     # Set player rolling ability to passed value
-    def setIsRollingDone(self, value) -> None:  
+    def setIsRollingDone(self, value: bool) -> None:  
         self.isRollingDone = value
 
     # Set if player is AI to passed value
-    def setIsAI(self, value) -> None:  
+    def setIsAI(self, value: bool) -> None:  
         self.isAI = value
+
+    def getChoosingProperty(self) -> bool:
+        return self.choosingProperty
+
+    def setChoosingProperty(self, value: bool) -> None:
+        self.choosingProperty = False
 

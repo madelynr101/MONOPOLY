@@ -122,9 +122,13 @@ PIECE_IMAGES: list[pygame.surface.Surface] = [
     pygame.image.load("Images/bat.png"),
 ]
 
+YES_NO_IMAGES: list[pygame.surface.Surface] = [
+    pygame.image.load("Images/yes.png"),
+    pygame.image.load("Images/no.png"),
+]
 
 # Purpose: To pick how many players and / or AI's there are within the game
-def chooseAIPlayers(screen):
+def choosePlayers(screen, playerType, playersLeft):
     # whether a person has picked how many players they want, AI or human 
     chosen = False 
 
@@ -149,13 +153,12 @@ def chooseAIPlayers(screen):
         # Quit if the X button is pressed
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                gameRunning = False
                 pygame.quit()
                 quit()
 
         draw_text(
             screen,
-            f"How many AI players do you want 0-4?",
+            f"How many {playerType} players do you want 0-4?",
             font,
             TEXT_COL,
             20,
@@ -164,9 +167,13 @@ def chooseAIPlayers(screen):
 
         # player buttons output to screen and data collected
         for i in range(len(buttons)):
-            buttons[i].draw(screen)
-            if buttons[i].clicked:
-                return i  # Returns the button pressed, the number of AI player we want 
+            if i <= playersLeft:  # Only draw the buttons if pressing them wouldn't take the total over four players
+                if playersLeft == 4 and i == 0 and playerType != "AI":
+                    continue
+                else:
+                    buttons[i].draw(screen)
+                    if buttons[i].clicked:
+                        return i  # Returns the button pressed, the number of AI player we want 
 
         pygame.display.update()
 
@@ -174,8 +181,7 @@ def chooseAIPlayers(screen):
 # Matt Chenot
 # Purpose: To display dice roll screen and the dice after the roll
 def rollDisplay(screen: pygame.surface.Surface, text_color: tuple[int, int, int], screen_size: tuple[int, int], currentPlayer: player):
-    # NOTE: think on moving this to the roll function, that way the popup can show up for the jail stuff to
-    # NOTE: I have yet to figure out the more complicated version of this, so here is a simple one for now
+    # Images are put on the board since I could never figure out popups
 
     diceImageList = []
     scaledDiceImageList = []
@@ -199,8 +205,17 @@ def rollDisplay(screen: pygame.surface.Surface, text_color: tuple[int, int, int]
 
 # Henry
 # Purpose: To diplay game over button
-def game_over():
-    pass
+def game_over(screen: pygame.surface.Surface, winningText: str, winningPlayer: int) -> bool:
+    screen.fill((255, 255, 255)) # White the screen
+    draw_text(screen, winningText, font, PLAYER_COLS[winningPlayer], 20, 20)
+    draw_text(screen, "Game over", font, TEXT_COL, 200, 200)
+
+    endGameImage = pygame.image.load("Images/endGameImage.png")
+    
+    endGameButton: Button = Button(250, 250, endGameImage, (50, 100))
+    
+    if endGameButton.draw():
+        return True
 
 
 # Madelyn Weathers
@@ -211,7 +226,7 @@ def get_paid():
 
 # Ethan Moore
 # Purpose: Show when someone gets sent to jail, chose to attempt a roll or pay $50 to get out
-def jail(prisoner: int):  # NOTE: This is currently never called
+def jail(screen: pygame.surface.Surface, playerList: list[player.Player], prisoner: int, board: list[tile.Tile]):  # NOTE: This is currently never called
     choiceMade = False
     escapeImage = pygame.image.load("Images/escapeButton.png")
     payImage = pygame.image.load("Images/payButton.png")
@@ -223,21 +238,21 @@ def jail(prisoner: int):  # NOTE: This is currently never called
         payButton = Button(150, 100, payImage, (50,100))
         cardButton = Button(250, 100, useCardImage, (50,100))
 
-        if escapeButton.draw():
-            playerList[prisioner].move()
+        if escapeButton.draw(screen):
+            playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
             choiceMade = True
         if prisoner.money > 50:
-            if payButton.draw():
+            if payButton.draw(screen):
                 playerList[prisoner].bankTransaction(-50)
                 playerList[prisoner].isInJail = False
                 choiceMade = True
-                playerList[prisoner].move()
+                playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
         if prisoner.getOutOfJailCards > 0:
-            if cardButton.draw():
+            if cardButton.draw(screen):
                 playerList[prisoner].isInJail = False
                 playerList[prisoner].getOutOfJailCards -= 1
                 choiceMade = True
-                playerList[prisoner].move()
+                playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
 
 
 # HENRY'S PART
@@ -257,7 +272,6 @@ def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
-                gameRunning = False
                 pygame.quit()
                 exit()
 
@@ -285,9 +299,6 @@ def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]
 
         pygame.display.update()
 
-
-def pick_piece(playerIndex, pieceIndex):
-    pass
 
 
 # Tile types and locations are hardcoded, this puts them into the passed board
@@ -344,7 +355,7 @@ def load_tiles(board):
 def main():
     # setup main screen
     screen: pygame.surface.Surface = pygame.display.set_mode(
-        (1000, 1000), pygame.RESIZABLE
+        (1000, 1000)
     )
     area = screen.get_rect()
     pygame.display.set_caption("Monopoly")
@@ -368,8 +379,7 @@ def main():
     # player array:
     playerList: list[player.Player] = []
 
-    # Always 4 players, always start on turn 1
-    numPlayers = 4
+    # Always start on turn 1
     turnCount = 1
 
     # For testing purposes
@@ -380,17 +390,23 @@ def main():
     #     [board[8], board[18], board[26], board[37]],
     # ]
 
-    # change when giving players piece selection if we do that
-    for i in range(numPlayers):
-        # For testing purposes
-        # playerList.append(player.Player(i, True, playerProperties[i], 39))
-        playerList.append(player.Player(i, False))  # Create a player in the list, just incrementing the piece they are
-
     # for i in range(len(board)):
     #  screen.blit(tileSurface, (00, 100 * i))
 
-    # Figure out how many AI players there will be
-    numAIPlayers = chooseAIPlayers(screen)
+    # Figure out how many player of each type there will be
+    numAIPlayers: int = 0
+    numHumPlayers: int = 0
+    numPlayers: int = 0
+    maxPlayers: int = 4
+
+    # Get player counts
+    numAIPlayers = choosePlayers(screen, playerType = "AI", playersLeft = maxPlayers)
+    numHumPlayers = choosePlayers(screen, playerType = "human", playersLeft = maxPlayers - numAIPlayers)
+    numPlayers = numAIPlayers + numHumPlayers
+
+    # Create the appropriate number of players in the list
+    for i in range(numPlayers):
+        playerList.append(player.Player(i, False))  # Create a player in the list, just incrementing the piece they are
 
     # Mark the selected players as AI
     # This works from the end, so if you select 2 AI players, then players 3 and 4 will be AI
@@ -411,50 +427,119 @@ def main():
     while gameRunning:
         print(f"Turn: {turnCount}")
 
-        for i in range(len(playerList)):  # For each player
-            turnFinished = False
-            playerList[i].setIsRollingDone(False)  # Reset dice rolls at the start of each players turn
+        numBankrupt: int = 0  # How many players are currently bankrupt 
+        for i in range(len(playerList)):
+            if playerList[i].getIsBankrupt == True:
+                numBankrupt += 1
 
-            while not turnFinished:  # Loop until the end turn button is pressed
-                for e in pygame.event.get():
-                    if e.type == pygame.QUIT:  # Close pygame if the X is clicked
-                        gameRunning = False
-                        pygame.quit()
-                        exit()
+        if numBankrupt < numPlayers:  # End the game if all but one player is bankrupt
+            for i in range(len(playerList)):  # For each player
+                if playerList[i].getIsBankrupt(): # If the player is bankrupt, skip their turn
+                    continue
+                
+                elif playerList[i].getIsInJail():  # If the player is in jail, handle that seperatly
+                    if playerList[i].getIsAI() == True:
+                        playerList[i].AIJailDecision()
+                        
+                    else:
+                        jail(screen, playerList, i, board)
 
-                screen.blit(main_surface, (0, 0))  # Displays the board
+                    rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled while in jail
+                
+                else:  # Normal turn
+                    turnFinished: bool = False
+                    playerList[i].setIsRollingDone(False)  # Reset dice rolls at the start of each players turn
 
-                playerList[i].displayNameMoney(screen, font, PLAYER_COLS[i], (width, height), i)  # Display the current player and how much money they have
+                    while not turnFinished:  # Loop until the end turn button is pressed
+                        for e in pygame.event.get():
+                            if e.type == pygame.QUIT:  # Close pygame if the X is clicked
+                                gameRunning = False
+                                pygame.quit()
+                                exit()
 
-                # Rolling
-                if playerList[i].getIsRollingDone() == False and playerList[i].getIsAI() == False: # If the player can roll not an AI
-                    if rollButton.draw(screen):  # Draw a button players can press to roll
-                        playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])
+                        screen.blit(main_surface, (0, 0))  # Displays the board
 
-                elif playerList[i].getIsAI() == True:  # If the player is AI, have them roll until they can't and end thier turn
-                    playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])
+                        playerList[i].displayNameMoney(screen, font, PLAYER_COLS[i], (width, height), i)  # Display the current player and how much money they have
 
-                    if playerList[i].getIsRollingDone() == True:  # This means that an AI player will always roll again if they get doubles 
-                        turnFinished = True
+                        # Update display to show current board state
+                        for j in range(len(playerList)):  
+                            playerList[j].displayProperties(screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS)  # Display who ownes which property
+                            playerList[j].showLocation(screen, PIECE_IMAGES, PLAYER_LOCATIONS, playerList[j].piece)  # Display all of the players pieces on the board
 
-                if playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0:  # These condtions mean player has rolled at least once this turn
-                    rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled
+                        if playerList[i].getChoosingProperty():
+                            decisionMade: bool = False
 
-                # Update display to show current board state
-                for j in range(len(playerList)):  
-                    playerList[j].displayProperties(screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS)  # Display who ownes which property
-                    playerList[j].showLocation(screen, PIECE_IMAGES, PLAYER_LOCATIONS, playerList[j].piece)  # Display all of the players pieces on the board
+                            yes: pygame.surface.Surface = pygame.image.load("Images/yes.png")
+                            no: pygame.surface.Surface = pygame.image.load("Images/no.png")
 
-                if playerList[i].getIsAI() == False:  # Don't draw the button for AI players
-                    if endTurnButton.draw(screen):  # Button to pass the turn
-                        turnFinished = True
+                            # Let human players chose if they want to buy the property
+                            if not decisionMade:
+                                draw_text(
+                                    screen,
+                                    f"Do you want to purchase this property?",
+                                    font,
+                                    PLAYER_COLS[i],
+                                    10,
+                                    10,
+                                )
 
-                pygame.display.update()
-                clock.tick(60)
+                                yesButton = Button(50, 100, yes, (200, 50))
+                                noButton = Button(250, 100, no, (200, 50))
 
-                # If the current player is AI, hang after thier turn for a couple seconds so everyone else can see what they did
-                if playerList[i].getIsAI() == True:
-                    time.sleep(2)
+                                if not decisionMade:
+                                    if yesButton.draw(screen):
+                                        decisionMade = True
+                                        purchaseProperty = True
+
+                                    # Player does not buy property, the screen closes.
+                                    elif noButton.draw(screen):
+                                        decisionMade = True
+                                        purchaseProperty = False
+
+                            if decisionMade and purchaseProperty:
+                                if board[playerList[i].location].getCost() < playerList[i].money:
+                                    playerList[i].money -= board[playerList[i].location].getCost()
+                                    playerList[i].properties.append(board[playerList[i].location])
+                                    board[playerList[i].location].setOwner(playerList[i].piece)
+                                
+                                playerList[i].setChoosingProperty(False)
+                                
+                        else:
+                            # Rolling
+                            if playerList[i].getIsRollingDone() == False and playerList[i].getIsAI() == False: # If the player can roll not an AI
+                                if rollButton.draw(screen):  # Draw a button players can press to roll
+                                    playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])
+
+                            elif playerList[i].getIsAI() == True:  # If the player is AI, have them roll until they can't and end thier turn
+                                playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])
+
+                                if playerList[i].getIsRollingDone() == True:  # This means that an AI player will always roll again if they get doubles 
+                                    turnFinished = True
+
+                            if playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0:  # These condtions mean player has rolled at least once this turn
+                                rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled
+
+                            # End turn button
+                            if playerList[i].getIsAI() == False and (playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0):  # Don't draw the button for AI players or if someone hasn't rolled yet
+                                if endTurnButton.draw(screen):  # Button to pass the turn
+                                    turnFinished = True
+
+                        pygame.display.update()
+                        clock.tick(60)
+
+                        # If the current player is AI, hang after thier turn for a couple seconds so everyone else can see what they did
+                        if playerList[i].getIsAI() == True:
+                            time.sleep(2)
+                            
+        else:  # All but one player bankrupt, the game is over
+            winningPlayer = 0 
+            for i in range(len(playerList)):  # Find the player that isn't bankrupt
+                if playerList[i].getIsBankrupt == True:
+                    winningPlayer = i
+                    
+            winningText: str = f"Player {winningPlayer + 1} won!"
+            
+            gameRunning = not game_over(screen, winningText, winningPlayer)
 
         turnCount += 1
 

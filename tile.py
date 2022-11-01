@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
-from card import *
-from cardTypes import *
+import card
+import cardTypes
 
 # This is the main abstract tile class
 # All the other types of tiles inherit and build thier own functionality of this class
@@ -118,11 +118,11 @@ class Chance(Tile):
 
     def landedOn(self) -> str:
         # Draw the card
-        chaCard: ChanceCard = ChanceCard()
-        effect: CardReturn = chaCard.getEffect()
+        chaCard: card.ChanceCard = card.ChanceCard()
+        effect: card.CardReturn = chaCard.getEffect()
 
         # If the card effect is money based
-        if isinstance(effect.requirement, MoneyFlavor):
+        if isinstance(effect.requirement, cardTypes.MoneyFlavor):
             match effect.requirement.transfer:
                 case "toOtherPlayers":
                     return f"PayAll:{effect.randomAmount}"
@@ -130,7 +130,7 @@ class Chance(Tile):
                     return f"ReceiveFromAll:{effect.randomAmount}"
 
         # If the card is movment based
-        elif isinstance(effect.requirement, MovementFlavor):
+        elif isinstance(effect.requirement, cardTypes.MovementFlavor):
             match effect.requirement.direction:
                 case "toJail":
                     return f"ToJail"
@@ -143,6 +143,9 @@ class Chance(Tile):
         else:
             return "GetOutCard"
 
+    def displayCard(screen):
+        pass
+
 # Draw a community chest card when landed on, parsing of card effects handled in the player class
 class CommunityChest(Tile):
     def __init__(self, index) -> None:
@@ -150,11 +153,11 @@ class CommunityChest(Tile):
 
     def landedOn(self) -> str:
         # Draw the card
-        comCard: CommunityCard = CommunityCard()
-        effect: CardReturn = comCard.getEffect()
+        comCard: card.CommunityCard = card.CommunityCard()
+        effect: card.CardReturn = comCard.getEffect()
 
         # If the card effect is money based
-        if isinstance(effect.requirement, MoneyFlavor):
+        if isinstance(effect.requirement, cardTypes.MoneyFlavor):
             match effect.requirement.transfer:
                 case "toBank":
                     return f"Charge:{effect.randomAmount}"
@@ -162,7 +165,7 @@ class CommunityChest(Tile):
                     return f"Charge:{-effect.randomAmount}"
 
         # If the card is movment based
-        elif isinstance(effect.requirement, MovementFlavor):
+        elif isinstance(effect.requirement, cardTypes.MovementFlavor):
             match effect.requirement.direction:
                 case "toRailroad":
                     return "ToRailroad"
@@ -174,6 +177,9 @@ class CommunityChest(Tile):
         # Get out of jail free card
         else:
             return "GetOutCard"
+
+    def displayCard(screen):
+        pass
 
 # Pay $200 when landed on
 class IncomeTax(Tile):
