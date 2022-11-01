@@ -129,8 +129,8 @@ YES_NO_IMAGES: list[pygame.surface.Surface] = [
 
 # Purpose: To pick how many players and / or AI's there are within the game
 def choosePlayers(screen, playerType, playersLeft):
-    # whether a person has picked how many players they want, AI or human 
-    chosen = False 
+    # whether a person has picked how many players they want, AI or human
+    chosen = False
 
     # images for player selection:
     zero = pygame.image.load("Images/0.png")
@@ -173,7 +173,7 @@ def choosePlayers(screen, playerType, playersLeft):
                 else:
                     buttons[i].draw(screen)
                     if buttons[i].clicked:
-                        return i  # Returns the button pressed, the number of AI player we want 
+                        return i  # Returns the button pressed, the number of AI player we want
 
         pygame.display.update()
 
@@ -196,7 +196,7 @@ def rollDisplay(screen: pygame.surface.Surface, text_color: tuple[int, int, int]
         scaledDiceImageList.append(pygame.transform.scale(image, (80, 80)))
 
     smallerFont: pygame.font.Font = pygame.font.SysFont("arialblack", 25)
-    
+
     # Does the actual display
     draw_text(screen, f"Roll:", smallerFont, text_color, screen_size[0] / 1.73, screen_size[1] / 2)
     screen.blit(scaledDiceImageList[currentPlayer.getLastRoll()[0]-1], (screen_size[0] / 1.55, screen_size[1] / 2))
@@ -211,9 +211,9 @@ def game_over(screen: pygame.surface.Surface, winningText: str, winningPlayer: i
     draw_text(screen, "Game over", font, TEXT_COL, 200, 200)
 
     endGameImage = pygame.image.load("Images/endGameImage.png")
-    
+
     endGameButton: Button = Button(250, 250, endGameImage, (50, 100))
-    
+
     if endGameButton.draw():
         return True
 
@@ -259,7 +259,7 @@ def jail(screen: pygame.surface.Surface, playerList: list[player.Player], prison
 # Purpose: To choose the piece for each player
 def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]):
     playersChosen = 0
-    
+
     availablePieces = [True] * 4
     while playersChosen < len(playerList):
         print(playersChosen)
@@ -411,9 +411,9 @@ def main():
     # Mark the selected players as AI
     # This works from the end, so if you select 2 AI players, then players 3 and 4 will be AI
     for i in range(numAIPlayers):
-        playerList[numPlayers - i - 1].setIsAI(True)  
+        playerList[numPlayers - i - 1].setIsAI(True)
 
-    
+
     choosePieces(screen, playerList)  # Chose which player will be which piece
 
     # Button prep
@@ -427,7 +427,7 @@ def main():
     while gameRunning:
         print(f"Turn: {turnCount}")
 
-        numBankrupt: int = 0  # How many players are currently bankrupt 
+        numBankrupt: int = 0  # How many players are currently bankrupt
         for i in range(len(playerList)):
             if playerList[i].getIsBankrupt == True:
                 numBankrupt += 1
@@ -436,16 +436,16 @@ def main():
             for i in range(len(playerList)):  # For each player
                 if playerList[i].getIsBankrupt(): # If the player is bankrupt, skip their turn
                     continue
-                
+
                 elif playerList[i].getIsInJail():  # If the player is in jail, handle that seperatly
                     if playerList[i].getIsAI() == True:
                         playerList[i].AIJailDecision()
-                        
+
                     else:
                         jail(screen, playerList, i, board)
 
                     rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled while in jail
-                
+
                 else:  # Normal turn
                     turnFinished: bool = False
                     playerList[i].setIsRollingDone(False)  # Reset dice rolls at the start of each players turn
@@ -462,7 +462,7 @@ def main():
                         playerList[i].displayNameMoney(screen, font, PLAYER_COLS[i], (width, height), i)  # Display the current player and how much money they have
 
                         # Update display to show current board state
-                        for j in range(len(playerList)):  
+                        for j in range(len(playerList)):
                             playerList[j].displayProperties(screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS)  # Display who ownes which property
                             playerList[j].showLocation(screen, PIECE_IMAGES, PLAYER_LOCATIONS, playerList[j].piece)  # Display all of the players pieces on the board
 
@@ -496,14 +496,15 @@ def main():
                                         decisionMade = True
                                         purchaseProperty = False
 
-                            if decisionMade and purchaseProperty:
-                                if board[playerList[i].location].getCost() < playerList[i].money:
-                                    playerList[i].money -= board[playerList[i].location].getCost()
-                                    playerList[i].properties.append(board[playerList[i].location])
-                                    board[playerList[i].location].setOwner(playerList[i].piece)
-                                
+                            if decisionMade:
+                                if purchaseProperty:
+                                    if board[playerList[i].location].getCost() < playerList[i].money:
+                                        playerList[i].money -= board[playerList[i].location].getCost()
+                                        playerList[i].properties.append(board[playerList[i].location])
+                                        board[playerList[i].location].setOwner(playerList[i].piece)
+
                                 playerList[i].setChoosingProperty(False)
-                                
+
                         else:
                             # Rolling
                             if playerList[i].getIsRollingDone() == False and playerList[i].getIsAI() == False: # If the player can roll not an AI
@@ -513,7 +514,7 @@ def main():
                             elif playerList[i].getIsAI() == True:  # If the player is AI, have them roll until they can't and end thier turn
                                 playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])
 
-                                if playerList[i].getIsRollingDone() == True:  # This means that an AI player will always roll again if they get doubles 
+                                if playerList[i].getIsRollingDone() == True:  # This means that an AI player will always roll again if they get doubles
                                     turnFinished = True
 
                             if playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0:  # These condtions mean player has rolled at least once this turn
@@ -530,15 +531,15 @@ def main():
                         # If the current player is AI, hang after thier turn for a couple seconds so everyone else can see what they did
                         if playerList[i].getIsAI() == True:
                             time.sleep(2)
-                            
+
         else:  # All but one player bankrupt, the game is over
-            winningPlayer = 0 
+            winningPlayer = 0
             for i in range(len(playerList)):  # Find the player that isn't bankrupt
                 if playerList[i].getIsBankrupt == True:
                     winningPlayer = i
-                    
+
             winningText: str = f"Player {winningPlayer + 1} won!"
-            
+
             gameRunning = not game_over(screen, winningText, winningPlayer)
 
         turnCount += 1
