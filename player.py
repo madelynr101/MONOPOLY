@@ -46,7 +46,7 @@ class Player:
 
     # Test function to print all the properties a player owns
     def getProperties(self) -> str:
-        propList = ""
+        propList: str = ""
         for prop in self.properties:
             propList += f"{prop.getIndex()}, "
 
@@ -54,7 +54,7 @@ class Player:
 
     # Pay another player
     def pay(self, landedOn: tile.Property, playerList) -> None:
-        cost = landedOn.getRent()  # wherever we get cost, varies based on propery and houses / hotels
+        cost: int = landedOn.getRent()  # wherever we get cost, varies based on propery and houses / hotels
 
         # If player can afford the price
         if self.money >= cost:
@@ -81,9 +81,9 @@ class Player:
 
     # Simulate dice roll, two random numbers 1-6, returns the rolled values in a list
     def roll(self) -> tuple[int, int]:
-        diceOne = random.randint(1, 6)
-        diceTwo = random.randint(1, 6)
-        self.lastRoll = [diceOne, diceTwo]  # Needed to display the correct dice elsewhere
+        diceOne: int = random.randint(1, 6)
+        diceTwo: int = random.randint(1, 6)
+        self.lastRoll: tuple[int, int] = [diceOne, diceTwo]  # Needed to display the correct dice elsewhere
 
         return [diceOne, diceTwo]
 
@@ -122,8 +122,8 @@ class Player:
             self.toJail()
             return # end movment
 
-        distance = dice[0] + dice[1]  # This is the number of spaces we are gonna move
-        moved = 0  # How many spaces we have moved
+        distance: int = dice[0] + dice[1]  # This is the number of spaces we are gonna move
+        moved: int = 0  # How many spaces we have moved
 
         # The actual movment
         while moved < distance:
@@ -155,9 +155,6 @@ class Player:
         effect: str,
         board: list[tile.Tile],
         playerList,
-        screen: pygame.surface.Surface,
-        font: pygame.font.Font,
-        text_color: tuple[int, int, int],
     ) -> None:
         instructions = effect.split(":")
         print(f"{effect=}")
@@ -221,15 +218,15 @@ class Player:
 
             # Special case for paying rent for utilities
             case "PayUtility":  # Utility indexes are 12 and 28
-                amountDue = random.randint(1, 6)  # Roll a dice
+                amountDue: int = 0
 
                 # If the same player ownes both utilities
                 if board[12].getOwner() == board[28].getOwner():  
-                    amountDue *= 10
+                    amountDue = (self.lastRoll[0] + self.lastRoll[1]) *  10
 
                 # Player only owns one utility
                 else:  
-                    amountDue *= 4
+                    amountDue = (self.lastRoll[0] + self.lastRoll[1]) * 4
 
                 # Can't afford rent, bankrupt
                 if amountDue >= self.money:  
@@ -259,9 +256,7 @@ class Player:
                             break
 
             # Purchase the unowned property at given index
-            case "Purchase":  # Note that instruction here reffers to the inedex of the tile being purchased
-                # This block crashse the program if run, commenting it out for testing
-                # TODO Make it not crash
+            case "Purchase":  # Note that instruction here reffers to the index of the tile being purchased
                 if not self.isAI:  # Players can chose wheather to buy property or not
                     self.choosingProperty = True
                 else:  # This is what the AI does, always buy if you have the money
@@ -269,9 +264,6 @@ class Player:
                         self.money -= board[instructionValue].getCost()
                         self.properties.append(board[instructionValue])
                         board[instructionValue].setOwner(self.piece)
-
-                #else:
-                 #   print("Can't afford property!")
 
             # Move number of spaces
             case "Move":
@@ -298,8 +290,8 @@ class Player:
 
             # Card effect: move to the nearest railraod
             case "toRailroad":
-                railroadLocs = [5, 15, 25, 35]
-                currClosestLoc = len(board)
+                railroadLocs: list[int] = [5, 15, 25, 35]
+                currClosestLoc: int = len(board)
 
                 for loc in railroadLocs:
                     if self.location - loc <= currClosestLoc:
@@ -324,7 +316,7 @@ class Player:
                                 player.bankTransaction(200)
     
     # Seeing the player is able to leave jail this turn 
-    def escapeJail(self, dice: List[int]) -> None:
+    def escapeJail(self, dice: tuple[int, int]) -> None:
         if dice[0] == dice[1]:
             self.isInJail = False
             self.turnsInJail = 0
@@ -542,5 +534,5 @@ class Player:
         return self.choosingProperty
 
     def setChoosingProperty(self, value: bool) -> None:
-        self.choosingProperty = False
+        self.choosingProperty = value
 

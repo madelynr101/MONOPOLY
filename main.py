@@ -1,4 +1,3 @@
-# from xml.dom.minidom import TypeInfo
 from turtle import width
 import pygame
 from sys import exit
@@ -128,23 +127,23 @@ YES_NO_IMAGES: list[pygame.surface.Surface] = [
 ]
 
 # Purpose: To pick how many players and / or AI's there are within the game
-def choosePlayers(screen, playerType, playersLeft):
+def choosePlayers(screen: pygame.surface.Surface, playerType: str, playersLeft: int) -> None:
     # whether a person has picked how many players they want, AI or human
-    chosen = False
+    chosen: bool = False
 
     # images for player selection:
-    zero = pygame.image.load("Images/0.png")
-    one = pygame.image.load("Images/1.png")
-    two = pygame.image.load("Images/2.png")
-    three = pygame.image.load("Images/3.png")
-    four = pygame.image.load("Images/4.png")
+    zero: pygame.surface.Surface = pygame.image.load("Images/0.png")
+    one: pygame.surface.Surface = pygame.image.load("Images/1.png")
+    two: pygame.surface.Surface = pygame.image.load("Images/2.png")
+    three: pygame.surface.Surface = pygame.image.load("Images/3.png")
+    four: pygame.surface.Surface = pygame.image.load("Images/4.png")
 
-    zeroButton = Button(50, 500, zero, (80, 80))
-    oneButton = Button(250, 500, one, (80, 80))
-    twoButton = Button(450, 500, two, (80, 80))
-    threeButton = Button(650, 500, three, (80, 80))
-    fourButton = Button(850, 500, four, (80, 80))
-    buttons = [zeroButton, oneButton, twoButton, threeButton, fourButton]
+    zeroButton: Button = Button(50, 500, zero, (80, 80))
+    oneButton: Button = Button(250, 500, one, (80, 80))
+    twoButton: Button = Button(450, 500, two, (80, 80))
+    threeButton: Button = Button(650, 500, three, (80, 80))
+    fourButton: Button = Button(850, 500, four, (80, 80))
+    buttons: list[Button] = [zeroButton, oneButton, twoButton, threeButton, fourButton]
 
     # Choose amount of AI players:
     while chosen != True:
@@ -158,7 +157,7 @@ def choosePlayers(screen, playerType, playersLeft):
 
         draw_text(
             screen,
-            f"How many {playerType} players do you want 0-4?",
+            f"How many {playerType} players do you want?",
             font,
             TEXT_COL,
             20,
@@ -166,11 +165,21 @@ def choosePlayers(screen, playerType, playersLeft):
         )
 
         # player buttons output to screen and data collected
-        for i in range(len(buttons)):
-            if i <= playersLeft:  # Only draw the buttons if pressing them wouldn't take the total over four players
-                if playersLeft == 4 and i == 0 and playerType != "AI":
-                    continue
-                else:
+        if playerType == "AI":
+            for i in range(len(buttons)):
+                buttons[i].draw(screen)
+                if buttons[i].clicked:
+                    return i
+
+        elif playerType == "Human" and playersLeft == 4:
+            for i in range(2, len(buttons)):
+                buttons[i].draw(screen)
+                if buttons[i].clicked:
+                    return i
+
+        else:
+            for i in range(len(buttons)):
+                if i <= playersLeft:  # Only draw the buttons if pressing them wouldn't take the total over four players
                     buttons[i].draw(screen)
                     if buttons[i].clicked:
                         return i  # Returns the button pressed, the number of AI player we want
@@ -180,11 +189,12 @@ def choosePlayers(screen, playerType, playersLeft):
 
 # Matt Chenot
 # Purpose: To display dice roll screen and the dice after the roll
-def rollDisplay(screen: pygame.surface.Surface, text_color: tuple[int, int, int], screen_size: tuple[int, int], currentPlayer: player):
+def rollDisplay(screen: pygame.surface.Surface, text_color: tuple[int, int, int], screen_size: tuple[int, int], currentPlayer: player) -> None:
     # Images are put on the board since I could never figure out popups
 
-    diceImageList = []
-    scaledDiceImageList = []
+    diceImageList: list[pygame.surface.Surface] = []
+    scaledDiceImageList: list[pygame.surface.Surface] = []
+
     diceImageList.append(pygame.image.load("Images/dice1.png"))
     diceImageList.append(pygame.image.load("Images/dice2.png"))
     diceImageList.append(pygame.image.load("Images/dice3.png"))
@@ -210,8 +220,7 @@ def game_over(screen: pygame.surface.Surface, winningText: str, winningPlayer: i
     draw_text(screen, winningText, font, PLAYER_COLS[winningPlayer], 20, 20)
     draw_text(screen, "Game over", font, TEXT_COL, 200, 200)
 
-    endGameImage = pygame.image.load("Images/endGameImage.png")
-
+    endGameImage: pygame.surface.Surface = pygame.image.load("Images/endGameImage.png")
     endGameButton: Button = Button(250, 250, endGameImage, (50, 100))
 
     if endGameButton.draw():
@@ -226,27 +235,29 @@ def get_paid():
 
 # Ethan Moore
 # Purpose: Show when someone gets sent to jail, chose to attempt a roll or pay $50 to get out
-def jail(screen: pygame.surface.Surface, playerList: list[player.Player], prisoner: int, board: list[tile.Tile]):  # NOTE: This is currently never called
-    choiceMade = False
-    escapeImage = pygame.image.load("Images/escapeButton.png")
-    payImage = pygame.image.load("Images/payButton.png")
-    useCardImage = pygame.image.load("Images/cardButton.png")
+def jail(screen: pygame.surface.Surface, playerList: list[player.Player], prisoner: int, board: list[tile.Tile]) -> None:  # NOTE: This is currently never called
+    choiceMade: bool = False
+    escapeImage: pygame.surface.Surface = pygame.image.load("Images/escapeButton.png")
+    payImage: pygame.surface.Surface = pygame.image.load("Images/payButton.png")
+    useCardImage: pygame.surface.Surface = pygame.image.load("Images/cardButton.png")
     # TODO: ensure buttons properly display
     while not choiceMade:
         draw_text(screen, f"How do you want to leave jail?", font, TEXT_COL, 20, 20)
-        escapeButton = Button(50, 100, escapeImage, (50, 100))
-        payButton = Button(150, 100, payImage, (50,100))
-        cardButton = Button(250, 100, useCardImage, (50,100))
+        escapeButton: Button = Button(50, 100, escapeImage, (50, 100))
+        payButton: Button = Button(150, 100, payImage, (50,100))
+        cardButton: Button = Button(250, 100, useCardImage, (50,100))
 
         if escapeButton.draw(screen):
             playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
             choiceMade = True
+
         if prisoner.money > 50:
             if payButton.draw(screen):
                 playerList[prisoner].bankTransaction(-50)
                 playerList[prisoner].isInJail = False
                 choiceMade = True
                 playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
+
         if prisoner.getOutOfJailCards > 0:
             if cardButton.draw(screen):
                 playerList[prisoner].isInJail = False
@@ -257,18 +268,18 @@ def jail(screen: pygame.surface.Surface, playerList: list[player.Player], prison
 
 # HENRY'S PART
 # Purpose: To choose the piece for each player
-def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]):
-    playersChosen = 0
+def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]) -> None:
+    playersChosen: int = 0
+    availablePieces: list[bool] = [True] * 4
 
-    availablePieces = [True] * 4
     while playersChosen < len(playerList):
-        print(playersChosen)
         screen.fill((255, 255, 255))
+
         # image for character selection
-        gauntlet = PIECE_IMAGES[0]
-        cape = PIECE_IMAGES[1]
-        batcar = PIECE_IMAGES[2]
-        bat = PIECE_IMAGES[3]
+        gauntlet: pygame.surface.Surface = PIECE_IMAGES[0]
+        cape: pygame.surface.Surface = PIECE_IMAGES[1]
+        batcar: pygame.surface.Surface = PIECE_IMAGES[2]
+        bat: pygame.surface.Surface = PIECE_IMAGES[3]
 
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
@@ -284,11 +295,11 @@ def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]
             100,
         )
 
-        gauntletButton = Button(150, 500, gauntlet, (100, 100))
-        capeButton = Button(350, 500, cape, (100, 100))
-        batcarButton = Button(550, 500, batcar, (100, 100))
-        batButton = Button(750, 500, bat, (100, 100))
-        buttons = [gauntletButton, capeButton, batcarButton, batButton]
+        gauntletButton: Button = Button(150, 500, gauntlet, (100, 100))
+        capeButton: Button = Button(350, 500, cape, (100, 100))
+        batcarButton: Button = Button(550, 500, batcar, (100, 100))
+        batButton: Button = Button(750, 500, bat, (100, 100))
+        buttons: list[Button] = [gauntletButton, capeButton, batcarButton, batButton]
 
         for i in range(len(PIECE_IMAGES)):
             if availablePieces[i]:
@@ -302,7 +313,7 @@ def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]
 
 
 # Tile types and locations are hardcoded, this puts them into the passed board
-def load_tiles(board):
+def load_tiles(board: list[tile.Tile]) -> None:
     # Regular board is: Go, brown, community chest, brown, income tax, railroad, light blue, chance, light blue light blue, jail
     # Purple, utilities, purple, purple, railroad, orange, community chest, orange, orange, free parking
     # Red, chance, red, red, railroad, yellow, yellow, utilities, yellow, go to jail
@@ -355,7 +366,7 @@ def load_tiles(board):
 def main():
     # setup main screen
     screen: pygame.surface.Surface = pygame.display.set_mode(
-        (1000, 1000)
+        (1000, 1000), pygame.FULLSCREEN
     )
     area = screen.get_rect()
     pygame.display.set_caption("Monopoly")
@@ -370,17 +381,17 @@ def main():
     print("Height " + str(height))
     print("Width " + str(width))
 
-    gameRunning = True
+    gameRunning: bool = True
 
     # put tiles in this array:
-    board = []
+    board: list[tile.Tile] = []
     load_tiles(board)
 
     # player array:
     playerList: list[player.Player] = []
 
     # Always start on turn 1
-    turnCount = 1
+    turnCount: int = 1
 
     # For testing purposes
     # playerProperties: list[list[tile.Property]] = [
@@ -400,8 +411,10 @@ def main():
     maxPlayers: int = 4
 
     # Get player counts
-    numAIPlayers = choosePlayers(screen, playerType = "AI", playersLeft = maxPlayers)
-    numHumPlayers = choosePlayers(screen, playerType = "human", playersLeft = maxPlayers - numAIPlayers)
+    numAIPlayers = choosePlayers(screen, "AI", maxPlayers)
+    if(numAIPlayers < maxPlayers):
+        numHumPlayers = choosePlayers(screen, "Human", maxPlayers - numAIPlayers)
+
     numPlayers = numAIPlayers + numHumPlayers
 
     # Create the appropriate number of players in the list
@@ -417,11 +430,11 @@ def main():
     choosePieces(screen, playerList)  # Chose which player will be which piece
 
     # Button prep
-    endTurnImage = pygame.image.load("Images/endTurn.png")
-    endTurnButton = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
+    endTurnImage: pygame.surface.Surface = pygame.image.load("Images/endTurn.png")
+    endTurnButton: Button = Button(width / 7, height / 1.26, endTurnImage, (200, 50))
 
-    rollImage = pygame.image.load("Images/rollButton.png")
-    rollButton = Button(width / 2.75, height / 1.26, rollImage, (200, 50))
+    rollImage: pygame.surface.Surface = pygame.image.load("Images/rollButton.png")
+    rollButton: Button = Button(width / 2.75, height / 1.26, rollImage, (200, 50))
 
     # Main loop (This is the actual game part):
     while gameRunning:
@@ -483,8 +496,8 @@ def main():
                                     10,
                                 )
 
-                                yesButton = Button(50, 100, yes, (200, 50))
-                                noButton = Button(250, 100, no, (200, 50))
+                                yesButton: Button = Button(50, 100, yes, (200, 50))
+                                noButton: Button = Button(250, 100, no, (200, 50))
 
                                 if not decisionMade:
                                     if yesButton.draw(screen):
@@ -533,7 +546,7 @@ def main():
                             time.sleep(2)
 
         else:  # All but one player bankrupt, the game is over
-            winningPlayer = 0
+            winningPlayer: int = 0
             for i in range(len(playerList)):  # Find the player that isn't bankrupt
                 if playerList[i].getIsBankrupt == True:
                     winningPlayer = i

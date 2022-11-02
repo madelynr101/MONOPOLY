@@ -20,13 +20,13 @@ class Tile(metaclass=ABCMeta):
 class Property(Tile):
     def __init__(self, index):
         super().__init__(index)
-        self.owner = None
-        self.cost = 0
-        self.rent = 0
-        self.color = None
+        self.owner: int = None
+        self.cost: int = 0
+        self.rent: int = 0
+        self.color: str = None
     
     # Parameterized constructor 
-    def __init__(self, index, cost, rent, color):
+    def __init__(self, index: int, cost: int, rent: int, color: str):
         super().__init__(index)
         self.owner = None
         self.cost = cost
@@ -34,7 +34,7 @@ class Property(Tile):
         self.color = color  # Note that this value is also used to specifiy if the property is a railroad or a utility
 
     def landedOn(self, landingPlayer: int) -> str:
-        instructionToReturn = ""
+        instructionToReturn: str = ""
 
         if self.owner == None:  # If no one owns this property
             instructionToReturn = f"Purchase:{self.index}"  # Player class will handle having enough money / if they want to but it
@@ -96,7 +96,7 @@ class FreeParking(Tile):
 
 # Sends the player to jail
 class GoToJail(Tile):
-    def __init__(self, index) -> None:
+    def __init__(self, index: int) -> None:
         super().__init__(index)
 
     def landedOn(self) -> str:
@@ -105,7 +105,7 @@ class GoToJail(Tile):
 
 # Does nothing when landed on, jail logic handled by player class.
 class Jail(Tile):
-    def __init__(self, index) -> None:
+    def __init__(self, index: int) -> None:
         super().__init__(index)
 
     def landedOn(self) -> str:
@@ -113,7 +113,7 @@ class Jail(Tile):
 
 # Draw a chance card when landed on, parsing of card effects handled in the player class
 class Chance(Tile):
-    def __init__(self, index) -> None:
+    def __init__(self, index: int) -> None:
         super().__init__(index)
 
     def landedOn(self) -> str:
@@ -148,7 +148,7 @@ class Chance(Tile):
 
 # Draw a community chest card when landed on, parsing of card effects handled in the player class
 class CommunityChest(Tile):
-    def __init__(self, index) -> None:
+    def __init__(self, index: int) -> None:
         super().__init__(index)
 
     def landedOn(self) -> str:
@@ -183,7 +183,7 @@ class CommunityChest(Tile):
 
 # Pay $200 when landed on
 class IncomeTax(Tile):
-    def __init__(self, index) -> None:
+    def __init__(self, index: int) -> None:
         super().__init__(index)
 
     # Player pays $200 to bank
@@ -192,7 +192,7 @@ class IncomeTax(Tile):
 
 # Pay $210 when landed on
 class LuxuryTax(Tile):
-    def __init__(self, index) -> None:
+    def __init__(self, index: int) -> None:
         super().__init__(index)
 
     # Player pays $200 to bank
