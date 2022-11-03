@@ -366,7 +366,7 @@ def load_tiles(board: list[tile.Tile]) -> None:
 def main():
     # setup main screen
     screen: pygame.surface.Surface = pygame.display.set_mode(
-        (1000, 1000), pygame.FULLSCREEN
+        (1000, 1000)
     )
     area = screen.get_rect()
     pygame.display.set_caption("Monopoly")
@@ -479,26 +479,28 @@ def main():
                             playerList[j].displayProperties(screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS)  # Display who ownes which property
                             playerList[j].showLocation(screen, PIECE_IMAGES, PLAYER_LOCATIONS, playerList[j].piece)  # Display all of the players pieces on the board
 
+                        # If the player is currently buying somehting, show them the popups for that
                         if playerList[i].getChoosingProperty():
                             decisionMade: bool = False
 
                             yes: pygame.surface.Surface = pygame.image.load("Images/yes.png")
                             no: pygame.surface.Surface = pygame.image.load("Images/no.png")
+                            backgroundBox: pygame.surface.Surface = pygame.image.load("Images/textbox.png")
+                            screen.blit(pygame.transform.scale(backgroundBox, (715, 400)), (width / 7, height / 4.5))
 
                             # Let human players chose if they want to buy the property
                             if not decisionMade:
-                                draw_text(
-                                    screen,
-                                    f"Do you want to purchase this property?",
-                                    font,
-                                    PLAYER_COLS[i],
-                                    10,
-                                    10,
-                                )
+                                draw_text(screen,
+                                    f"Purchase the property",
+                                    font,PLAYER_COLS[i], 250, 250)
+                                draw_text(screen,
+                                    f"for ${board[playerList[i].location].getCost()}?",
+                                    font,PLAYER_COLS[i], 400, 300)
 
-                                yesButton: Button = Button(50, 100, yes, (200, 50))
-                                noButton: Button = Button(250, 100, no, (200, 50))
+                                noButton: Button = Button(250, 450, no, (200, 50))
+                                yesButton: Button = Button(530, 450, yes, (200, 50))
 
+                                # Until player makes a choice
                                 if not decisionMade:
                                     if yesButton.draw(screen):
                                         decisionMade = True
@@ -510,7 +512,7 @@ def main():
                                         purchaseProperty = False
 
                             if decisionMade:
-                                if purchaseProperty:
+                                if purchaseProperty:  # Take money and mark ownership if bought
                                     if board[playerList[i].location].getCost() < playerList[i].money:
                                         playerList[i].money -= board[playerList[i].location].getCost()
                                         playerList[i].properties.append(board[playerList[i].location])

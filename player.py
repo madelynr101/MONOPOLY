@@ -143,7 +143,7 @@ class Player:
         if isinstance(board[self.location], tile.Chance) or isinstance(board[self.location], tile.CommunityChest):
             pass
 
-        self.landOnParse(effect, board, playerList, screen, font, text_color)
+        self.landOnParse(effect, board, playerList)
         
 
     # Spaces return a formated string regarding what they do, this function parses those strings and preforms the desired action
