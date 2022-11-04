@@ -222,16 +222,16 @@ class IncomeTax(Tile):
     def __init__(self, index: int) -> None:
         super().__init__(index)
 
-    # Player pays $200 to bank
+    # Player pays $200
     def landedOn(self) -> str:
         return "Charge:200"
 
-# Pay $210 when landed on
+# Pay $100 when landed on
 class LuxuryTax(Tile):
     def __init__(self, index: int) -> None:
         super().__init__(index)
 
-    # Player pays $200 to bank
+    # Player pays $100
     def landedOn(self) -> str:
         return "Charge:100"
 

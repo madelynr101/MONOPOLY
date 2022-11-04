@@ -377,6 +377,8 @@ class Player:
         )
 
     def AIJailDecision(self) -> None:
+        self.jailChoiceMade = True
+        
         if(self.getOutOfJailCards > 0):
             self.getOutOfJailCards -= 1
             self.isInJail = False
