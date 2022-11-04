@@ -2,6 +2,9 @@ from abc import ABCMeta, abstractmethod
 import card
 import cardTypes
 
+import pygame
+from draw import Button, draw_text
+
 # This is the main abstract tile class
 # All the other types of tiles inherit and build thier own functionality of this class
 class Tile(metaclass=ABCMeta):
@@ -116,18 +119,23 @@ class Chance(Tile):
     def __init__(self, index: int) -> None:
         super().__init__(index)
 
-    def landedOn(self) -> str:
+    def landedOn(self, screen) -> str:
         # Draw the card
         chaCard: card.ChanceCard = card.ChanceCard()
         effect: card.CardReturn = chaCard.getEffect()
+
+        text = effect.flavorText
+        amount = effect.randomAmount
+
+        self.displayCard(screen, text, amount)
 
         # If the card effect is money based
         if isinstance(effect.requirement, cardTypes.MoneyFlavor):
             match effect.requirement.transfer:
                 case "toOtherPlayers":
-                    return f"PayAll:{effect.randomAmount}"
+                    return f"PayAll:{amount}"
                 case "fromOtherPlayers":
-                    return f"ReceiveFromAll:{effect.randomAmount}"
+                    return f"ReceiveFromAll:{amount}"
 
         # If the card is movment based
         elif isinstance(effect.requirement, cardTypes.MovementFlavor):
@@ -135,34 +143,46 @@ class Chance(Tile):
                 case "toJail":
                     return f"ToJail"
                 case "forwards":
-                    return f"MoveAll:{effect.randomAmount}"
+                    return f"MoveAll:{amount}"
                 case "backwards":
-                    return f"MoveAll:{-effect.randomAmount}"
+                    return f"MoveAll:{-amount}"
 
         # Get out of jail free card
         else:
             return "GetOutCard"
 
-    def displayCard(screen):
-        pass
+    def displayCard(screen, text, amount):
+        dismissed = False
+        while not dismissed:
+            font = pygame.font.SysFont("arialblack", 40)
+            pygame.draw.rect(screen, (255, 255, 255), (300, 200, 400, 600))
+            draw_text(screen, "Community Chest", font, (0, 0, 0), 310, 210)
+            draw_text(screen, text, font, (0, 0, 0), 310, 240)
+            draw_text(screen, f"Amount: {amount}", font, (0, 0, 0), 310, 270)
+            dismissButton = Button()
 
 # Draw a community chest card when landed on, parsing of card effects handled in the player class
 class CommunityChest(Tile):
     def __init__(self, index: int) -> None:
         super().__init__(index)
 
-    def landedOn(self) -> str:
+    def landedOn(self, screen) -> str:
         # Draw the card
         comCard: card.CommunityCard = card.CommunityCard()
         effect: card.CardReturn = comCard.getEffect()
+
+        text = effect.flavorText
+        amount = effect.randomAmount
+
+        self.displayCard(screen, text, amount)
 
         # If the card effect is money based
         if isinstance(effect.requirement, cardTypes.MoneyFlavor):
             match effect.requirement.transfer:
                 case "toBank":
-                    return f"Charge:{effect.randomAmount}"
+                    return f"Charge:{amount}"
                 case "fromBank":
-                    return f"Charge:{-effect.randomAmount}"
+                    return f"Charge:{-amount}"
 
         # If the card is movment based
         elif isinstance(effect.requirement, cardTypes.MovementFlavor):
@@ -178,7 +198,7 @@ class CommunityChest(Tile):
         else:
             return "GetOutCard"
 
-    def displayCard(screen):
+    def displayCard(screen, text, amount):
         pass
 
 # Pay $200 when landed on
