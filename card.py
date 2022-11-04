@@ -2,8 +2,8 @@ from io import FileIO
 from json import load
 from abc import abstractmethod
 from typing import Union
-from random import randint, random
-from cardTypes import *
+from random import randint
+from cardTypes import Flavor, CombinedFlavor, MovementFlavor, MoneyFlavor, CardReturn, ConsumableCards, MoveEnum
 
 class Card():
     def __init__(self) -> None:

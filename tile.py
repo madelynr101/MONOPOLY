@@ -151,7 +151,7 @@ class Chance(Tile):
         else:
             return "GetOutCard"
 
-    def displayCard(screen, text, amount):
+    def displayCard(self, screen, text, amount):
         dismissed = False
         while not dismissed:
             font = pygame.font.SysFont("arialblack", 40)
@@ -159,7 +159,12 @@ class Chance(Tile):
             draw_text(screen, "Community Chest", font, (0, 0, 0), 310, 210)
             draw_text(screen, text, font, (0, 0, 0), 310, 240)
             draw_text(screen, f"Amount: {amount}", font, (0, 0, 0), 310, 270)
-            dismissButton = Button()
+            dismissImage = pygame.image.load("Images/yes.png")
+            dismissButton = Button(310, 490, dismissImage, (380, 100))
+            if dismissButton.draw(screen):
+                dismissed = True
+
+            pygame.display.update()
 
 # Draw a community chest card when landed on, parsing of card effects handled in the player class
 class CommunityChest(Tile):
@@ -198,8 +203,19 @@ class CommunityChest(Tile):
         else:
             return "GetOutCard"
 
-    def displayCard(screen, text, amount):
-        pass
+    def displayCard(self, screen, text, amount):
+        dismissed = False
+        while not dismissed:
+            font = pygame.font.SysFont("arialblack", 40)
+            pygame.draw.rect(screen, (255, 255, 255), (300, 200, 400, 600))
+            draw_text(screen, "Chance", font, (0, 0, 0), 310, 210)
+            draw_text(screen, text, font, (0, 0, 0), 310, 240)
+            draw_text(screen, f"Amount: {amount}", font, (0, 0, 0), 310, 270)
+            dismissImage = pygame.image.load("Images/yes.png")
+            dismissButton = Button(310, 490, dismissImage, (380, 100))
+            if dismissButton.draw(screen):
+                dismissed = True
+            pygame.display.update()
 
 # Pay $200 when landed on
 class IncomeTax(Tile):

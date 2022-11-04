@@ -229,7 +229,28 @@ def game_over(screen: pygame.surface.Surface, winningText: str, winningPlayer: i
 
 # Madelyn Weathers
 # Purpose: To show how much money someone gets paid after they land on their property
-def get_paid():
+def get_paid(screen: pygame.surface.Surface, amount):
+    chosen: bool = True
+    
+    # amount owed 
+    while chosen != True:
+        screen.fill((255, 255, 255))
+
+        # Quit if the X button is pressed
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        draw_text(
+            screen,
+            f"You owe {} {} ", 
+            font,
+            TEXT_COL,
+            20,
+            20,
+        )
+
     pass
 
 
@@ -249,20 +270,20 @@ def jail(screen: pygame.surface.Surface, playerList: list[player.Player], prison
 
         if escapeButton.draw(screen):
             playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
-            choiceMade = True
+            playerList[prisoner].setJailChoiceMade = True
 
-        if prisoner.money > 50:
+        if playerList[prisoner].money > 50:
             if payButton.draw(screen):
                 playerList[prisoner].bankTransaction(-50)
                 playerList[prisoner].isInJail = False
-                choiceMade = True
+                playerList[prisoner].setJailChoiceMade = True
                 playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
 
-        if prisoner.getOutOfJailCards > 0:
+        if playerList[prisoner].getOutOfJailCards > 0:
             if cardButton.draw(screen):
                 playerList[prisoner].isInJail = False
                 playerList[prisoner].getOutOfJailCards -= 1
-                choiceMade = True
+                playerList[prisoner].setJailChoiceMade = True
                 playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
 
 
@@ -436,6 +457,10 @@ def main():
     rollImage: pygame.surface.Surface = pygame.image.load("Images/rollButton.png")
     rollButton: Button = Button(width / 2.75, height / 1.26, rollImage, (200, 50))
 
+    # NOTE: These are temp, delete them
+    jailImage: pygame.surface.Surface = pygame.image.load("Images/closeButton.png")
+    jailButton: Button = Button(width / 2, height / 2, jailImage, (200, 50))
+
     # Main loop (This is the actual game part):
     while gameRunning:
         print(f"Turn: {turnCount}")
@@ -450,14 +475,14 @@ def main():
                 if playerList[i].getIsBankrupt(): # If the player is bankrupt, skip their turn
                     continue
 
-                elif playerList[i].getIsInJail():  # If the player is in jail, handle that seperatly
+                '''elif playerList[i].getIsInJail():  # If the player is in jail, handle that seperatly
                     if playerList[i].getIsAI() == True:
                         playerList[i].AIJailDecision()
 
                     else:
                         jail(screen, playerList, i, board)
 
-                    rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled while in jail
+                    rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled while in jail'''
 
                 else:  # Normal turn
                     turnFinished: bool = False
@@ -478,6 +503,16 @@ def main():
                         for j in range(len(playerList)):
                             playerList[j].displayProperties(screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS)  # Display who ownes which property
                             playerList[j].showLocation(screen, PIECE_IMAGES, PLAYER_LOCATIONS, playerList[j].piece)  # Display all of the players pieces on the board
+
+                        # Jail stuff
+                        if playerList[i].getIsInJail():  # If the player is in jail, handle that seperatly
+                            if playerList[i].getIsAI() == True:
+                            playerList[i].AIJailDecision()
+
+                        else:
+                            jail(screen, playerList, i, board)
+
+                        rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled while in jail
 
                         # If the player is currently buying somehting, show them the popups for that
                         if playerList[i].getChoosingProperty():
@@ -533,7 +568,12 @@ def main():
                                     turnFinished = True
 
                             if playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0:  # These condtions mean player has rolled at least once this turn
-                                rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled
+                                if playerList[i].getIsInJail() == False:  # NOTE: This is a temp condition for the jail button
+                                    rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled
+
+                            # NOTE: Jail button is for testing, delete when done
+                            if jailButton.draw(screen):
+                                playerList[i].toJail()
 
                             # End turn button
                             if playerList[i].getIsAI() == False and (playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0):  # Don't draw the button for AI players or if someone hasn't rolled yet

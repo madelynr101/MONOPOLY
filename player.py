@@ -4,7 +4,7 @@ from typing import List
 from datetime import datetime
 
 import pygame
-from draw import Button, draw_text
+from draw import draw_text
 
 random.seed(datetime.now().timestamp())
 
@@ -25,6 +25,7 @@ class Player:
         self.isBankrupt: bool = False  # Is the player currently bankrupt
         self.isAI: bool = AI
         self.choosingProperty: bool = False
+        self.jailChoiceMade: bool = False
 
     # For testing purposes
     # def __init__(
@@ -137,11 +138,10 @@ class Player:
         # Effects of space landed on
         if isinstance(board[self.location], tile.Property):
             effect: str = board[self.location].landedOn(self.piece)
+        elif isinstance(board[self.location], tile.Chance) or isinstance(board[self.location], tile.CommunityChest):
+            effect: str = board[self.location].landedOn(screen)
         else:
             effect: str = board[self.location].landedOn()
-        
-        if isinstance(board[self.location], tile.Chance) or isinstance(board[self.location], tile.CommunityChest):
-            pass
 
         self.landOnParse(effect, board, playerList)
         
@@ -337,6 +337,7 @@ class Player:
 
     # Player is sent to jail
     def toJail(self) -> None:
+        self.isRollingDone = True
         self.index = jailIndex
         self.isInJail = True
 
@@ -536,3 +537,8 @@ class Player:
     def setChoosingProperty(self, value: bool) -> None:
         self.choosingProperty = value
 
+    def getJailChoiceMade(self) -> bool:
+        return self.jailChoiceMade
+
+    def setJailChoiceMade(self, value: bool) -> None:
+        self.jailChoiceMade = value
