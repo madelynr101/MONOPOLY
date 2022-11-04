@@ -26,24 +26,9 @@ class Player:
         self.isAI: bool = AI
         self.choosingProperty: bool = False
         self.jailChoiceMade: bool = False
-
-    # For testing purposes
-    # def __init__(
-    #     self, pieceIn: int, AI: bool, properties: list[tile.Property], location: int
-    # ):
-    #     self.money: int = 1500  # The amount of money the player currently has
-    #     self.properties: list[tile.Property] = properties  # properties play owns
-    #     self.location: int = (
-    #         location  # Index value for the tile the player is currently
-    #     )
-    #     self.getOutOfJailCards: int = (
-    #         0  # The number of get out of jail free cards the player currently has
-    #     )
-    #     self.isInJail: bool = False  # Is the player currently in jail
-    #     self.doubleRolls: int = 0  # Increases whenever the player rolls doubles, set back to zero when they don't
-    #     self.piece: int = pieceIn  # Index of the players piece
-    #     self.isBankrupt: bool = False  # Is the player currently bankrupt
-    #     self.isAI: bool = AI
+        self.acknowledgingTax: bool = False
+        self.isPaying: bool = False
+        self.isPayed: bool = False
 
     # Test function to print all the properties a player owns
     def getProperties(self) -> str:
@@ -63,7 +48,7 @@ class Player:
             playerList[landedOn.getOwner()].money += cost
 
         # If player can't afford the price, pay what they have and are now bankrupt
-        else:  
+        else:
             playerList[landedOn.getOwner()].money += self.money
             self.money -= cost
             self.isBankrupt = True
@@ -74,8 +59,8 @@ class Player:
         if self.money + amount > 0:
             self.money += amount
 
-        # Else we don't have enough to pay the bank 
-        else:  
+        # Else we don't have enough to pay the bank
+        else:
             self.money = 0
             self.isBankrupt = True
             self.RemoveProperties()
@@ -108,16 +93,16 @@ class Player:
             return  # End movement
 
         # If player didn't roll doubles
-        if dice[0] != dice[1]: 
+        if dice[0] != dice[1]:
             self.isRollingDone = True
             self.doubleRolls = 0
 
         # Player did roll doubles
-        else:  
+        else:
             self.doubleRolls += 1
 
         # Third double roll takes player immediatly to jail
-        if self.doubleRolls == 3:  
+        if self.doubleRolls == 3:
             self.isRollingDone = True
             self.doubleRolls = 0
             self.toJail()
@@ -141,13 +126,16 @@ class Player:
         elif isinstance(board[self.location], tile.Chance) or isinstance(board[self.location], tile.CommunityChest):
             effect: str = board[self.location].landedOn(screen)
         else:
+            if isinstance(board[self.location], tile.IncomeTax) or isinstance(board[self.location], tile.LuxuryTax):
+                self.acknowledgingTax = True
+
             effect: str = board[self.location].landedOn()
 
         self.landOnParse(effect, board, playerList)
-        
+
 
     # Spaces return a formated string regarding what they do, this function parses those strings and preforms the desired action
-    # Strings are of the format 'Action:Value' 
+    # Strings are of the format 'Action:Value'
     # The action is required and is the effect of the space
     # The ':Value' is optional, Value is some integer value that to specificy something about the action (i.e. the amount of rent to pay)
     def landOnParse(
@@ -201,11 +189,11 @@ class Player:
                         railroadAmt += 1
 
                 # Double rent owed for each railroad owned
-                for i in range(1, railroadAmt):
+                for _ in range(1, railroadAmt):
                     totalCost *= 2
 
                 # Can't affor rent, bankrupt
-                if totalCost >= self.money:  
+                if totalCost >= self.money:
                     playerList[board[instructionValue].getOwner()].money += self.money
                     self.money = 0
                     self.isBankrupt = True
@@ -221,27 +209,27 @@ class Player:
                 amountDue: int = 0
 
                 # If the same player ownes both utilities
-                if board[12].getOwner() == board[28].getOwner():  
+                if board[12].getOwner() == board[28].getOwner():
                     amountDue = (self.lastRoll[0] + self.lastRoll[1]) *  10
 
                 # Player only owns one utility
-                else:  
+                else:
                     amountDue = (self.lastRoll[0] + self.lastRoll[1]) * 4
 
                 # Can't afford rent, bankrupt
-                if amountDue >= self.money:  
+                if amountDue >= self.money:
                     playerList[board[instructionValue].getOwner()].money += self.money  # Give player all we have left
                     self.money = 0
                     self.isBankrupt = True
                     self.RemoveProperties()  # All owned properties return to the bank
 
                 # Pay rent calculated above
-                else:  
+                else:
                     playerList[board[instructionValue].getOwner()].money += amountDue
                     self.money -= amountDue
 
             # You give all other players money
-            case "PayAll":  
+            case "PayAll":
                 for player in playerList:
                     if player.piece != self.piece:
                         if self.money >= instructionValue:  # Player can afford to pay
@@ -272,7 +260,7 @@ class Player:
                         self.location -= 1
                         if self.location < 0:
                             self.location = len(board) - 1
-                            
+
                 else:  # Move forwards
                     for i in range(instructionValue):
                         self.location += 1
@@ -289,7 +277,7 @@ class Player:
                 self.getOutOfJailCards += 1
 
             # Card effect: move to the nearest railraod
-            case "toRailroad":
+            case "ToRailroad":
                 railroadLocs: list[int] = [5, 15, 25, 35]
                 currClosestLoc: int = len(board)
 
@@ -314,8 +302,8 @@ class Player:
                             if player.location >= len(board):  # $200 for passing go
                                 player.location = 0
                                 player.bankTransaction(200)
-    
-    # Seeing the player is able to leave jail this turn 
+
+    # Seeing the player is able to leave jail this turn
     def escapeJail(self, dice: tuple[int, int]) -> None:
         if dice[0] == dice[1]:
             self.isInJail = False
@@ -330,7 +318,7 @@ class Player:
         self.isRollingDone = True  # One roll per turn in jail, regardless of if you roll doubles and get out or not
 
     # Called when a player goes bankrupt, returns all of thier properties to the bank
-    def RemoveProperties(self) -> None:  
+    def RemoveProperties(self) -> None:
         for OwnedItem in self.properties:
             OwnedItem.owner = None
         self.properties = []
@@ -338,7 +326,7 @@ class Player:
     # Player is sent to jail
     def toJail(self) -> None:
         self.isRollingDone = True
-        self.index = jailIndex
+        self.location = jailIndex
         self.isInJail = True
 
     # Diplay info about who current player is and how much money they have
@@ -378,7 +366,7 @@ class Player:
 
     def AIJailDecision(self) -> None:
         self.jailChoiceMade = True
-        
+
         if(self.getOutOfJailCards > 0):
             self.getOutOfJailCards -= 1
             self.isInJail = False
@@ -415,12 +403,12 @@ class Player:
             text_location: list[int] = [location[0] - 6, location[1] - 15]
 
             # Rotate the property markers to match the boards orientation if needed
-            if 20 > property.index > 9:  # Left side of borad 
+            if 20 > property.index > 9:  # Left side of borad
                 number = pygame.transform.rotate(number, -90)
                 text_location[0] -= 6
                 text_location[1] += 8
 
-            elif 30 > property.index >= 20:  # Top of board 
+            elif 30 > property.index >= 20:  # Top of board
                 number = pygame.transform.rotate(number, 180)
                 text_location[0] += 1
                 text_location[1] += 2
@@ -455,7 +443,7 @@ class Player:
         rotatedImage: pygame.surface.Surface = scaledImages[index]
 
         # Rotate the player markers to match the boards orientation if needed
-        if 20 > self.location > 9:  # Left side of borad 
+        if 20 > self.location > 9:  # Left side of borad
             rotatedImage = pygame.transform.rotate(scaledImages[index], -90)
 
         elif 30 > self.location >= 20:  # Top of board
@@ -502,11 +490,11 @@ class Player:
             )
 
     # Return if player can roll at the current moment
-    def getIsRollingDone(self) -> bool:  
+    def getIsRollingDone(self) -> bool:
         return self.isRollingDone
 
     # Returns if a player is AI
-    def getIsAI(self) -> bool:  
+    def getIsAI(self) -> bool:
         return self.isAI
 
     # Returns if a player is bankrupt
@@ -518,19 +506,19 @@ class Player:
         return self.isInJail
 
     # Return # of times player has rolled dobules this turn
-    def getDoubleRolls(self) -> int:  
+    def getDoubleRolls(self) -> int:
         return self.doubleRolls
 
     # Return the players last roll
-    def getLastRoll(self) -> tuple[int, int]:  
+    def getLastRoll(self) -> tuple[int, int]:
         return self.lastRoll
 
     # Set player rolling ability to passed value
-    def setIsRollingDone(self, value: bool) -> None:  
+    def setIsRollingDone(self, value: bool) -> None:
         self.isRollingDone = value
 
     # Set if player is AI to passed value
-    def setIsAI(self, value: bool) -> None:  
+    def setIsAI(self, value: bool) -> None:
         self.isAI = value
 
     def getChoosingProperty(self) -> bool:
@@ -544,3 +532,9 @@ class Player:
 
     def setJailChoiceMade(self, value: bool) -> None:
         self.jailChoiceMade = value
+
+    def getAcknowledgingTax(self) -> bool:
+        return self.acknowledgingTax
+
+    def setAcknowledgingTax(self, value: bool) -> None:
+        self.acknowledgingTax = value

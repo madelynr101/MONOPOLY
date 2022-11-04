@@ -19,6 +19,7 @@ class Tile(metaclass=ABCMeta):
     def getIndex(self) -> int:
         return self.index
 
+
 # The main property class, includes regular properties, railroads and utilities
 class Property(Tile):
     def __init__(self, index):
@@ -27,8 +28,8 @@ class Property(Tile):
         self.cost: int = 0
         self.rent: int = 0
         self.color: str = None
-    
-    # Parameterized constructor 
+
+    # Parameterized constructor
     def __init__(self, index: int, cost: int, rent: int, color: str):
         super().__init__(index)
         self.owner = None
@@ -43,11 +44,13 @@ class Property(Tile):
             instructionToReturn = f"Purchase:{self.index}"  # Player class will handle having enough money / if they want to but it
 
         # If property is owned, but not by current player (landing player owning property does nothing)
-        elif self.owner != landingPlayer:  
+        elif self.owner != landingPlayer:
             if self.color == "Railroad":  # Rent increases for each railroad owned
                 instructionToReturn = f"PayRailroad:{self.index}"
 
-            elif self.color == "Utility":  # Rent is based on dice roll, number times 4 if one utility owned, 10 if both
+            elif (
+                self.color == "Utility"
+            ):  # Rent is based on dice roll, number times 4 if one utility owned, 10 if both
                 instructionToReturn = f"PayUtility:{self.index}"
 
             else:  # Standard property
@@ -56,15 +59,15 @@ class Property(Tile):
         return instructionToReturn
 
     # Return the rent value for the current property
-    def getRent(self) -> int:  
+    def getRent(self) -> int:
         return self.rent
 
     # Return the amount of money needed to buy the property
-    def getCost(self) -> int:  
+    def getCost(self) -> int:
         return self.cost
 
     # Owner is an index value representing one of the players
-    def getOwner(self) -> int:  
+    def getOwner(self) -> int:
         return self.owner
 
     # Set owner of the current property
@@ -78,7 +81,7 @@ class Property(Tile):
         return self.color
 
 
-# Starting tile 
+# Starting tile
 class Go(Tile):
     def __init__(
         self, index
@@ -97,6 +100,7 @@ class FreeParking(Tile):
     def landedOn(self) -> str:  # Blank string means doing nothing
         return "Move:20"  # 20 is the index of the jail
 
+
 # Sends the player to jail
 class GoToJail(Tile):
     def __init__(self, index: int) -> None:
@@ -114,6 +118,7 @@ class Jail(Tile):
     def landedOn(self) -> str:
         return ""
 
+
 # Draw a chance card when landed on, parsing of card effects handled in the player class
 class Chance(Tile):
     def __init__(self, index: int) -> None:
@@ -127,7 +132,7 @@ class Chance(Tile):
         text = effect.flavorText
         amount = effect.randomAmount
 
-        self.displayCard(screen, text, amount)
+        # self.displayCard(screen, text, amount)
 
         # If the card effect is money based
         if isinstance(effect.requirement, cardTypes.MoneyFlavor):
@@ -166,6 +171,7 @@ class Chance(Tile):
 
             pygame.display.update()
 
+
 # Draw a community chest card when landed on, parsing of card effects handled in the player class
 class CommunityChest(Tile):
     def __init__(self, index: int) -> None:
@@ -179,7 +185,7 @@ class CommunityChest(Tile):
         text = effect.flavorText
         amount = effect.randomAmount
 
-        self.displayCard(screen, text, amount)
+        # self.displayCard(screen, text, amount)
 
         # If the card effect is money based
         if isinstance(effect.requirement, cardTypes.MoneyFlavor):
@@ -217,6 +223,7 @@ class CommunityChest(Tile):
                 dismissed = True
             pygame.display.update()
 
+
 # Pay $200 when landed on
 class IncomeTax(Tile):
     def __init__(self, index: int) -> None:
@@ -226,6 +233,7 @@ class IncomeTax(Tile):
     def landedOn(self) -> str:
         return "Charge:200"
 
+
 # Pay $100 when landed on
 class LuxuryTax(Tile):
     def __init__(self, index: int) -> None:
@@ -234,6 +242,7 @@ class LuxuryTax(Tile):
     # Player pays $100
     def landedOn(self) -> str:
         return "Charge:100"
+
 
 # NOTE: I have no clue what (or if) this is used for
 def tileTest() -> None:

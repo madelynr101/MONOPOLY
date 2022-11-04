@@ -127,7 +127,9 @@ YES_NO_IMAGES: list[pygame.surface.Surface] = [
 ]
 
 # Purpose: To pick how many players and / or AI's there are within the game
-def choosePlayers(screen: pygame.surface.Surface, playerType: str, playersLeft: int) -> None:
+def choosePlayers(
+    screen: pygame.surface.Surface, playerType: str, playersLeft: int
+) -> None:
     # whether a person has picked how many players they want, AI or human
     chosen: bool = False
 
@@ -179,7 +181,9 @@ def choosePlayers(screen: pygame.surface.Surface, playerType: str, playersLeft: 
 
         else:
             for i in range(len(buttons)):
-                if i <= playersLeft:  # Only draw the buttons if pressing them wouldn't take the total over four players
+                if (
+                    i <= playersLeft
+                ):  # Only draw the buttons if pressing them wouldn't take the total over four players
                     buttons[i].draw(screen)
                     if buttons[i].clicked:
                         return i  # Returns the button pressed, the number of AI player we want
@@ -189,7 +193,12 @@ def choosePlayers(screen: pygame.surface.Surface, playerType: str, playersLeft: 
 
 # Matt Chenot
 # Purpose: To display dice roll screen and the dice after the roll
-def rollDisplay(screen: pygame.surface.Surface, text_color: tuple[int, int, int], screen_size: tuple[int, int], currentPlayer: player) -> None:
+def rollDisplay(
+    screen: pygame.surface.Surface,
+    text_color: tuple[int, int, int],
+    screen_size: tuple[int, int],
+    currentPlayer: player,
+) -> None:
     # Images are put on the board since I could never figure out popups
 
     diceImageList: list[pygame.surface.Surface] = []
@@ -208,15 +217,30 @@ def rollDisplay(screen: pygame.surface.Surface, text_color: tuple[int, int, int]
     smallerFont: pygame.font.Font = pygame.font.SysFont("arialblack", 25)
 
     # Does the actual display
-    draw_text(screen, f"Roll:", smallerFont, text_color, screen_size[0] / 1.73, screen_size[1] / 2)
-    screen.blit(scaledDiceImageList[currentPlayer.getLastRoll()[0]-1], (screen_size[0] / 1.55, screen_size[1] / 2))
-    screen.blit(scaledDiceImageList[currentPlayer.getLastRoll()[1]-1], (screen_size[0] / 1.35, screen_size[1] / 2))
+    draw_text(
+        screen,
+        f"Roll:",
+        smallerFont,
+        text_color,
+        screen_size[0] / 1.73,
+        screen_size[1] / 2,
+    )
+    screen.blit(
+        scaledDiceImageList[currentPlayer.getLastRoll()[0] - 1],
+        (screen_size[0] / 1.55, screen_size[1] / 2),
+    )
+    screen.blit(
+        scaledDiceImageList[currentPlayer.getLastRoll()[1] - 1],
+        (screen_size[0] / 1.35, screen_size[1] / 2),
+    )
 
 
 # Henry
 # Purpose: To diplay game over button
-def game_over(screen: pygame.surface.Surface, winningText: str, winningPlayer: int) -> bool:
-    screen.fill((255, 255, 255)) # White the screen
+def game_over(
+    screen: pygame.surface.Surface, winningText: str, winningPlayer: int
+) -> bool:
+    screen.fill((255, 255, 255))  # White the screen
     draw_text(screen, winningText, font, PLAYER_COLS[winningPlayer], 20, 20)
     draw_text(screen, "Game over", font, TEXT_COL, 200, 200)
 
@@ -229,40 +253,48 @@ def game_over(screen: pygame.surface.Surface, winningText: str, winningPlayer: i
 
 # Madelyn Weathers
 # Purpose: To show how much money someone gets paid after they land on their property
-def get_paid(screen: pygame.surface.Surface, amount):
-    chosen: bool = True
+def get_paid(
+    screen: pygame.surface.Surface,
+    amount: int,
+    playerToPay: player.Player,
+    playerPaying: player.Player,
+):
     # images and other references
     main_surface = pygame.image.load("Images/board.png")  # board image
     # size of main_surface
     width, height = main_surface.get_height(), main_surface.get_width()
     backgroundBox: pygame.surface.Surface = pygame.image.load("Images/textbox.png")
-    screen.blit(pygame.transform.scale(backgroundBox, (715, 400)), (width / 7, height / 4.5))
+    closeImage: pygame.surface.Surface = pygame.image.load("Images/yes.png")
+    screen.blit(
+        pygame.transform.scale(backgroundBox, (715, 400)), (width / 7, height / 4.5)
+    )
 
-    # amount owed 
-    while chosen != True:
-        screen.fill((255, 255, 255))
+    closeButton: Button = Button(250, 250, closeImage, (50, 100))
 
-        # Quit if the X button is pressed
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                quit()
+    #screen.fill((255, 255, 255))
 
-        draw_text(
-            screen,
-            f"You owe {amount} potatos", 
-            font,
-            TEXT_COL,
-            20,
-            20,
-        )
-        
-    pygame.display.update()
+    draw_text(
+        screen,
+        f"You owe {amount} to player {playerToPay + 1}",
+        font,
+        TEXT_COL,
+        20,
+        20,
+    )
+
+    if closeButton.draw(screen):
+        playerPaying.isPaying = False
+        playerPaying.isPayed = True
 
 
 # Ethan Moore
 # Purpose: Show when someone gets sent to jail, chose to attempt a roll or pay $50 to get out
-def jail(screen: pygame.surface.Surface, playerList: list[player.Player], prisoner: int, board: list[tile.Tile]) -> None:  # NOTE: This is currently never called
+def jail(
+    screen: pygame.surface.Surface,
+    playerList: list[player.Player],
+    prisoner: int,
+    board: list[tile.Tile],
+) -> None:  # NOTE: This is currently never called
     # Making width and height global would have been the way to go but we're in to deep to change it at this point
     main_surface = pygame.image.load("Images/board.png")  # board image
     width, height = main_surface.get_height(), main_surface.get_width()
@@ -270,23 +302,25 @@ def jail(screen: pygame.surface.Surface, playerList: list[player.Player], prison
     payImage: pygame.surface.Surface = pygame.image.load("Images/payButton.png")
     useCardImage: pygame.surface.Surface = pygame.image.load("Images/cardButton.png")
     backgroundBox: pygame.surface.Surface = pygame.image.load("Images/textbox.png")
-    screen.blit(pygame.transform.scale(backgroundBox, (715, 400)), (width / 7, height / 4.5))
+    screen.blit(
+        pygame.transform.scale(backgroundBox, (715, 400)), (width / 7, height / 4.5)
+    )
 
     # TODO: ensure buttons properly display
     draw_text(screen, f"How do you want to leave jail?", font, TEXT_COL, 250, 250)
     escapeButton: Button = Button(50, 100, escapeImage, (50, 100))
-    payButton: Button = Button(150, 100, payImage, (50,100))
-    cardButton: Button = Button(250, 100, useCardImage, (50,100))
+    payButton: Button = Button(150, 100, payImage, (50, 100))
+    cardButton: Button = Button(250, 100, useCardImage, (50, 100))
 
     if escapeButton.draw(screen):
         playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
-        playerList[prisoner].setJailChoiceMade = True
+        playerList[prisoner].setJailChoiceMade(True)
 
     if playerList[prisoner].money > 50:
         if payButton.draw(screen):
             playerList[prisoner].bankTransaction(-50)
             playerList[prisoner].isInJail = False
-            playerList[prisoner].setJailChoiceMade = True
+            playerList[prisoner].setJailChoiceMade(True)
             # I think leaving jail will leave the roll button avaliable (at least it should)
             # playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
 
@@ -294,13 +328,15 @@ def jail(screen: pygame.surface.Surface, playerList: list[player.Player], prison
         if cardButton.draw(screen):
             playerList[prisoner].isInJail = False
             playerList[prisoner].getOutOfJailCards -= 1
-            playerList[prisoner].setJailChoiceMade = True
+            playerList[prisoner].setJailChoiceMade(True)
             # playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
 
 
 # HENRY'S PART
 # Purpose: To choose the piece for each player
-def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]) -> None:
+def choosePieces(
+    screen: pygame.surface.Surface, playerList: list[player.Player]
+) -> None:
     playersChosen: int = 0
     availablePieces: list[bool] = [True] * 4
 
@@ -341,7 +377,6 @@ def choosePieces(screen: pygame.surface.Surface, playerList: list[player.Player]
                     playersChosen += 1
 
         pygame.display.update()
-
 
 
 # Tile types and locations are hardcoded, this puts them into the passed board
@@ -397,9 +432,7 @@ def load_tiles(board: list[tile.Tile]) -> None:
 
 def main():
     # setup main screen
-    screen: pygame.surface.Surface = pygame.display.set_mode(
-        (1000, 1000)
-    )
+    screen: pygame.surface.Surface = pygame.display.set_mode((1000, 1000))
     area = screen.get_rect()
     pygame.display.set_caption("Monopoly")
     clock = pygame.time.Clock()
@@ -425,17 +458,6 @@ def main():
     # Always start on turn 1
     turnCount: int = 1
 
-    # For testing purposes
-    # playerProperties: list[list[tile.Property]] = [
-    #     [board[1], board[5], board[13], board[23], board[34]],
-    #     [board[3], board[15], board[21], board[32]],
-    #     [board[6], board[11], board[24], board[31]],
-    #     [board[8], board[18], board[26], board[37]],
-    # ]
-
-    # for i in range(len(board)):
-    #  screen.blit(tileSurface, (00, 100 * i))
-
     # Figure out how many player of each type there will be
     numAIPlayers: int = 0
     numHumPlayers: int = 0
@@ -444,20 +466,21 @@ def main():
 
     # Get player counts
     numAIPlayers = choosePlayers(screen, "AI", maxPlayers)
-    if(numAIPlayers < maxPlayers):
+    if numAIPlayers < maxPlayers:
         numHumPlayers = choosePlayers(screen, "Human", maxPlayers - numAIPlayers)
 
     numPlayers = numAIPlayers + numHumPlayers
 
     # Create the appropriate number of players in the list
     for i in range(numPlayers):
-        playerList.append(player.Player(i, False))  # Create a player in the list, just incrementing the piece they are
+        playerList.append(
+            player.Player(i, False)
+        )  # Create a player in the list, just incrementing the piece they are
 
     # Mark the selected players as AI
     # This works from the end, so if you select 2 AI players, then players 3 and 4 will be AI
     for i in range(numAIPlayers):
         playerList[numPlayers - i - 1].setIsAI(True)
-
 
     choosePieces(screen, playerList)  # Chose which player will be which piece
 
@@ -472,9 +495,6 @@ def main():
     jailImage: pygame.surface.Surface = pygame.image.load("Images/closeButton.png")
     jailButton: Button = Button(width / 2, height / 2, jailImage, (200, 50))
 
-    # if player owes another player
-    playerOwe: bool = False
-
     # Main loop (This is the actual game part):
     while gameRunning:
         print(f"Turn: {turnCount}")
@@ -483,64 +503,101 @@ def main():
         for i in range(len(playerList)):
             if playerList[i].getIsBankrupt == True:
                 numBankrupt += 1
-        
-        if playerOwe == True:
-            get_paid(screen)
-            board[playerList[i].location].getPlayer()
+            playerList[i].isPayed = False
 
         if numBankrupt < numPlayers:  # End the game if all but one player is bankrupt
             for i in range(len(playerList)):  # For each player
-                if playerList[i].getIsBankrupt(): # If the player is bankrupt, skip their turn
+                if playerList[
+                    i
+                ].getIsBankrupt():  # If the player is bankrupt, skip their turn
                     continue
 
                 else:  # Normal turn
                     turnFinished: bool = False
-                    playerList[i].setIsRollingDone(False)  # Reset dice rolls at the start of each players turn
+                    playerList[i].setIsRollingDone(
+                        False
+                    )  # Reset dice rolls at the start of each players turn
+                    playerList[i].setJailChoiceMade(False)
 
                     while not turnFinished:  # Loop until the end turn button is pressed
                         for e in pygame.event.get():
-                            if e.type == pygame.QUIT:  # Close pygame if the X is clicked
+                            if (
+                                e.type == pygame.QUIT
+                            ):  # Close pygame if the X is clicked
                                 gameRunning = False
                                 pygame.quit()
                                 exit()
 
                         screen.blit(main_surface, (0, 0))  # Displays the board
 
-                        playerList[i].displayNameMoney(screen, font, PLAYER_COLS[i], (width, height), i)  # Display the current player and how much money they have
+                        playerList[i].displayNameMoney(
+                            screen, font, PLAYER_COLS[i], (width, height), i
+                        )  # Display the current player and how much money they have
 
                         # Update display to show current board state
                         for j in range(len(playerList)):
-                            playerList[j].displayProperties(screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS)  # Display who ownes which property
-                            playerList[j].showLocation(screen, PIECE_IMAGES, PLAYER_LOCATIONS, playerList[j].piece)  # Display all of the players pieces on the board
+                            playerList[j].displayProperties(
+                                screen, PLAYER_COLS[j], j, PROPERTY_LOCATIONS
+                            )  # Display who ownes which property
+                            playerList[j].showLocation(
+                                screen,
+                                PIECE_IMAGES,
+                                PLAYER_LOCATIONS,
+                                playerList[j].piece,
+                            )  # Display all of the players pieces on the board
 
                         # Jail stuff
-                        if playerList[i].getIsInJail() and playerList[i].getJailChoiceMade() == True:  # If the player is in jail and hasn't made a choice yet
+                        if (
+                            playerList[i].getIsInJail()
+                            and playerList[i].getJailChoiceMade() == False
+                        ):  # If the player is in jail and hasn't made a choice yet
                             if playerList[i].getIsAI() == True:
                                 playerList[i].AIJailDecision()
 
                             else:  # Display a regular players jail choices
                                 jail(screen, playerList, i, board)
 
-                            rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled while in jail
+                            rollDisplay(
+                                screen, PLAYER_COLS[i], (width, height), playerList[i]
+                            )  # Displays the dice the player rolled while in jail
 
                         # If the player is currently buying somehting, show them the popups for that
                         elif playerList[i].getChoosingProperty():
                             decisionMade: bool = False
 
-                            yes: pygame.surface.Surface = pygame.image.load("Images/yes.png")
-                            no: pygame.surface.Surface = pygame.image.load("Images/no.png")
+                            yes: pygame.surface.Surface = pygame.image.load(
+                                "Images/yes.png"
+                            )
+                            no: pygame.surface.Surface = pygame.image.load(
+                                "Images/no.png"
+                            )
 
-                            backgroundBox: pygame.surface.Surface = pygame.image.load("Images/textbox.png")
-                            screen.blit(pygame.transform.scale(backgroundBox, (715, 400)), (width / 7, height / 4.5))
+                            backgroundBox: pygame.surface.Surface = pygame.image.load(
+                                "Images/textbox.png"
+                            )
+                            screen.blit(
+                                pygame.transform.scale(backgroundBox, (715, 400)),
+                                (width / 7, height / 4.5),
+                            )
 
                             # Let human players chose if they want to buy the property
                             if not decisionMade:
-                                draw_text(screen,
+                                draw_text(
+                                    screen,
                                     f"Purchase the property",
-                                    font,PLAYER_COLS[i], 250, 250)
-                                draw_text(screen,
+                                    font,
+                                    PLAYER_COLS[i],
+                                    250,
+                                    250,
+                                )
+                                draw_text(
+                                    screen,
                                     f"for ${board[playerList[i].location].getCost()}?",
-                                    font,PLAYER_COLS[i], 400, 300)
+                                    font,
+                                    PLAYER_COLS[i],
+                                    400,
+                                    300,
+                                )
 
                                 noButton: Button = Button(250, 450, no, (200, 50))
                                 yesButton: Button = Button(530, 450, yes, (200, 50))
@@ -557,83 +614,188 @@ def main():
                                         purchaseProperty = False
 
                             if decisionMade:
-                                if purchaseProperty:  # Take money and mark ownership if bought
-                                    if board[playerList[i].location].getCost() < playerList[i].money:
-                                        playerList[i].money -= board[playerList[i].location].getCost()
-                                        playerList[i].properties.append(board[playerList[i].location])
-                                        board[playerList[i].location].setOwner(playerList[i].piece)
+                                if (
+                                    purchaseProperty
+                                ):  # Take money and mark ownership if bought
+                                    if (
+                                        board[playerList[i].location].getCost()
+                                        < playerList[i].money
+                                    ):
+                                        playerList[i].money -= board[
+                                            playerList[i].location
+                                        ].getCost()
+                                        playerList[i].properties.append(
+                                            board[playerList[i].location]
+                                        )
+                                        board[playerList[i].location].setOwner(
+                                            playerList[i].piece
+                                        )
 
                                 playerList[i].setChoosingProperty(False)
 
+                        # Popup for when the player pays rent to another player
+                        elif playerList[i].isPaying:
+                            get_paid(
+                                screen,
+                                board[playerList[i].location].getRent(),
+                                board[playerList[i].location].getOwner(),
+                                playerList[i],
+                            )
+
+                        # Popup for when a player pays a tax
+                        elif playerList[i].getAcknowledgingTax() == True:
+                            # If a human player landed on the Income Tax tile.
+                            if (
+                                playerList[i].getIsRollingDone() == False
+                                and not playerList[i].getIsAI()
+                                and isinstance(
+                                    board[playerList[i].location], tile.IncomeTax
+                                )
+                            ):
+                                incomeCloseSurface: pygame.surface.Surface = (
+                                    pygame.image.load("Images/closeButton.png")
+                                )
+                                incomeTaxBGBox: pygame.surface.Surface = (
+                                    pygame.image.load("Images/textbox.png")
+                                )
+
+                                screen.blit(
+                                    pygame.transform.scale(incomeTaxBGBox, (715, 400)),
+                                    (width / 7, height / 4.5),
+                                )
+
+                                draw_text(
+                                    screen,
+                                    "You landed on the Income Tax Space, you had to pay $200.",
+                                    font,
+                                    PLAYER_COLS[i],
+                                    250,
+                                    250,
+                                )
+
+                                incomeCloseButton: Button = Button(
+                                    340, 450, incomeCloseSurface, (200, 50)
+                                )
+
+                                if incomeCloseButton.draw(screen):
+                                    playerList[i].setAcknowledgingTax(False)
+
+                            # If a human player landed on the Luxury Tax tile.
+                            elif (
+                                playerList[i].getIsRollingDone() == False
+                                and not playerList[i].getIsAI()
+                                and isinstance(
+                                    board[playerList[i].location], tile.LuxuryTax
+                                )
+                            ):
+                                luxryCloseButton: pygame.surface.Surface = (
+                                    pygame.image.load("Images/closeButton.png")
+                                )
+                                luxuryTaxBGBox: pygame.surface.Surface = (
+                                    pygame.image.load("Images/textbox.png")
+                                )
+
+                                screen.blit(
+                                    pygame.transform.scale(luxuryTaxBGBox, (715, 400)),
+                                    (width / 7, height / 4.5),
+                                )
+
+                                draw_text(
+                                    screen,
+                                    "You landed on the Luxury Tax Space, you had to pay $100.",
+                                    font,
+                                    PLAYER_COLS[i],
+                                    250,
+                                    250,
+                                )
+
+                                luxuryCloseButton: Button = Button(
+                                    340, 450, luxryCloseButton, (200, 50)
+                                )
+
+                                if luxuryCloseButton.draw(screen):
+                                    playerList[i].setAcknowledgingTax(False)
+
                         else:
                             # Rolling
-                            if playerList[i].getIsRollingDone() == False and playerList[i].getIsAI() == False: # If the player can roll not an AI
-                                if rollButton.draw(screen):  # Draw a button players can press to roll
-                                    playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])
+                            if (
+                                playerList[i].getIsRollingDone() == False
+                                and playerList[i].getIsAI() == False
+                            ):  # If the player can roll not an AI
+                                if rollButton.draw(
+                                    screen
+                                ):  # Draw a button players can press to roll
+                                    playerList[i].move(
+                                        board, playerList, screen, font, PLAYER_COLS[i]
+                                    )
 
-                            elif playerList[i].getIsAI() == True:  # If the player is AI, have them roll until they can't and end thier turn
-                                playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])
+                            elif (
+                                playerList[i].getIsAI() == True
+                            ):  # If the player is AI, have them roll until they can't and end thier turn
+                                playerList[i].move(
+                                    board, playerList, screen, font, PLAYER_COLS[i]
+                                )
 
-                                if playerList[i].getIsRollingDone() == True:  # This means that an AI player will always roll again if they get doubles
+                                if (
+                                    playerList[i].getIsRollingDone() == True
+                                ):  # This means that an AI player will always roll again if they get doubles
                                     turnFinished = True
 
-                            if playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0:  # These condtions mean player has rolled at least once this turn
-                                if playerList[i].getIsInJail() == False:  # NOTE: This is a temp condition for the jail button
-                                    rollDisplay(screen, PLAYER_COLS[i], (width, height), playerList[i])  # Displays the dice the player rolled
+                            if (
+                                playerList[i].getIsRollingDone() == True
+                                or playerList[i].getDoubleRolls() != 0
+                            ):  # These condtions mean player has rolled at least once this turn
+                                if (
+                                    playerList[i].getIsInJail() == False
+                                ):  # NOTE: This is a temp condition for the jail button
+                                    rollDisplay(
+                                        screen,
+                                        PLAYER_COLS[i],
+                                        (width, height),
+                                        playerList[i],
+                                    )  # Displays the dice the player rolled
 
                             # NOTE: Jail button is for testing, delete when done
                             if jailButton.draw(screen):
                                 playerList[i].toJail()
 
-                            # If a human player landed on the Income Tax tile.
-                            if playerList[i].getIsRollingDone() == False and not playerList[i].getIsAI() and isinstance(board[playerList[i].location], tile.IncomeTax):
-                                confirmedPropTax: bool = False
-                                incomeCloseSurface: pygame.surface.Surface = pygame.image.load("Images/closeButton.png")
-                                incomeTaxBGBox: pygame.surface.Surface = pygame.image.load("Images/textbox.png")
-
-                                screen.blit(pygame.transform.scale(incomeTaxBGBox, (715, 400)), (width / 7, height / 4.5))
-
-                                if not confirmedPropTax:
-                                    draw_text(
-                                        "You landed on the Income Tax Space, you had to pay $200.",
-                                        font, PLAYER_COLS[i], 250, 250
-                                    )
-
-                                    incomeCloseButton: Button = Button(340, 450, incomeCloseSurface, (200, 50))
-
-                                    if incomeCloseButton.clicked():
-                                        confirmedPropTax = True
-
-                                
-                                
-
-                            # If a human player landed on the Luxury Tax tile.
-                            if playerList[i].getIsRollingDone() == False and not playerList[i].getIsAI() and isinstance(board[playerList[i].location], tile.LuxuryTax):
-                                confirmedPropTax: bool = False
-                                luxryCloseButton: pygame.surface.Surface = pygame.image.load("Images/closeButton.png")
-                                luxuryTaxBGBox: pygame.surface.Surface = pygame.image.load("Images/textbox.png")
-
-                                screen.blit(pygame.transform.scale(luxuryTaxBGBox, (715, 400)), (width / 7, height / 4.5))
-
-                                if not confirmedPropTax:
-                                    draw_text(
-                                        "You landed on the Luxury Tax Space, you had to pay $100.",
-                                        font, PLAYER_COLS[i], 250, 250
-                                    )
-
-                                    luxuryCloseButton: Button = Button(340, 450, luxryCloseButton, (200, 50))
-
-                                    if luxuryCloseButton.clicked():
-                                        confirmedPropTax = True
-
                             # If a human player lands on a property owened by someone else
-                            if playerList[i].getIsRollingDone() == False and not playerList[i].getIsAI() and isinstance(board[playerList[i].location], tile.Property):
-                                pass
-
+                            if (
+                                playerList[i].getIsRollingDone() == True
+                                and not playerList[i].getIsAI()
+                                and isinstance(
+                                    board[playerList[i].location], tile.Property
+                                ) and not playerList[i].isPayed
+                            ):
+                                if (
+                                    board[playerList[i].location].getOwner() != None
+                                    and board[playerList[i].location].getOwner() != i
+                                ):
+                                    if (
+                                        playerList[i].money
+                                        >= board[playerList[i].location].getRent()
+                                    ):
+                                        playerList[i].isPaying = True
+                                        get_paid(
+                                            screen,
+                                            board[playerList[i].location].getRent(),
+                                            board[playerList[i].location].getOwner(),
+                                            playerList[i],
+                                        )
+                                    else:
+                                        playerList[i].isBankrupt = True
+                                else:
+                                    # print(board[playerList[i].location].getOwner(), i)
+                                    pass
 
                             # End turn button
-                            if playerList[i].getIsAI() == False and (playerList[i].getIsRollingDone() == True or playerList[i].getDoubleRolls() != 0):  # Don't draw the button for AI players or if someone hasn't rolled yet
-                                if endTurnButton.draw(screen):  # Button to pass the turn
+                            if playerList[i].getIsAI() == False and (
+                                playerList[i].getIsRollingDone() == True
+                                or playerList[i].getDoubleRolls() != 0
+                            ):  # Don't draw the button for AI players or if someone hasn't rolled yet
+                                if endTurnButton.draw(
+                                    screen
+                                ):  # Button to pass the turn
                                     turnFinished = True
 
                         pygame.display.update()
@@ -654,6 +816,7 @@ def main():
             gameRunning = not game_over(screen, winningText, winningPlayer)
 
         turnCount += 1
+
 
 if __name__ == "__main__":
     main()
