@@ -1,7 +1,7 @@
 {
     "Chance": [
         {
-            "text": "Give money to every other player",
+            "text": "Give money to every\nother player",
             "effect": {
                 "type": "money",
                 "transfer": "toOtherPlayers",
@@ -17,7 +17,7 @@
             }
         },
         {
-            "text": "You have earned a Get out of Jail Free Card",
+            "text": "You have earned a\nGet out of Jail Free Card",
             "effect": {
                 "type": "consumable",
                 "affects": "self"
@@ -40,7 +40,7 @@
             }
         },
         {
-            "text": "Every other player owes you money",
+            "text": "Every other player\nowes you money",
             "effect": {
                 "type": "money",
                 "transfer": "fromOtherPlayers",
@@ -90,7 +90,7 @@
             }
         },
         {
-            "text": "You have earned a Get out of Jail Free Card",
+            "text": "You have earned a\nGet out of Jail Free Card",
             "effect": {
                 "type": "consumable",
                 "affects": "self"

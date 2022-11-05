@@ -3,10 +3,15 @@ import pygame
 from sys import exit
 from draw import Button, draw_text
 import time
+from cardTypes import *
+import random
+from datetime import datetime
 
 # Import backend functions for components of the game.
 import tile
 import player
+
+random.seed(datetime.now().timestamp())
 
 
 # Initialize pygame so we can initialize font
@@ -239,14 +244,6 @@ def game_over(
     draw_text(screen, winningText, font, PLAYER_COLS[winningPlayer], 20, 20)
     draw_text(screen, "Game over", font, TEXT_COL, 200, 200)
 
-    endGameImage: pygame.surface.Surface = pygame.image.load("Images/closeButton.png")
-    endGameButton: Button = Button(250, 250, endGameImage, (200, 50))
-
-    if endGameButton.draw(screen):  # Button to close the game
-        return True
-    else:
-        return False
-
 
 # Purpose: Dispalys a popup when paying rent showing how much and to which player
 def get_acknowledgement(
@@ -265,16 +262,12 @@ def get_acknowledgement(
         pygame.transform.scale(backgroundBox, (715, 400)), (width / 7, height / 4.5)
     )
 
-    closeButton: Button = Button(390, 450, closeImage, (200, 50))
+    closeButton: Button = Button(390, 550, closeImage, (200, 50))
 
-    draw_text(
-        screen,
-        text,
-        font,
-        TEXT_COL,
-        250,
-        250,
-    )
+    printText = text.split("\n")
+
+    for line in range(len(printText)):
+        draw_text(screen, printText[line], font, TEXT_COL, 250, 250+(line*50))
 
     if closeButton.draw(screen):
         if acknowledgementType == 'Rent':
@@ -284,6 +277,8 @@ def get_acknowledgement(
             playerPaying.acknowledgingChance = False
         elif acknowledgementType == 'Community':
             playerPaying.acknowledgingCommunity = False
+        elif acknowledgementType == 'Luxury' or acknowledgementType == 'Income':
+            playerPaying.acknowledgingTax = False
 
 
 # Purpose: Show when someone gets sent to jail, chose to attempt a roll or pay $50 to get out
@@ -292,7 +287,7 @@ def jail(
     playerList: list[player.Player],
     prisoner: int,
     board: list[tile.Tile],
-) -> None:  # NOTE: This is currently never called
+) -> None:
     # Making width and height global would have been the way to go but we're in to deep to change it at this point
     main_surface = pygame.image.load("Images/board.png")  # board image
     width, height = main_surface.get_height(), main_surface.get_width()
@@ -304,33 +299,32 @@ def jail(
         pygame.transform.scale(backgroundBox, (715, 400)), (width / 7, height / 4.5)
     )
 
-    # TODO: ensure buttons properly display
+    # Object prep
     draw_text(screen, f"How do you want to leave jail?", font, TEXT_COL, 170, 250)
     escapeButton: Button = Button(200, 450, escapeImage, (200, 50))
     payButton: Button = Button(410, 450, payImage, (200, 50))
     cardButton: Button = Button(620, 450, useCardImage, (200, 50))
 
+    # Roll to attempt to get out of jail
     if escapeButton.draw(screen):
         playerList[prisoner].move(board, playerList)
         playerList[prisoner].setJailChoiceMade(True)
-
+    
+    # Pay to get out of jail
     if playerList[prisoner].money > 50:
         if payButton.draw(screen):
             playerList[prisoner].bankTransaction(-50)
             playerList[prisoner].isInJail = False
             playerList[prisoner].setJailChoiceMade(True)
-            # I think leaving jail will leave the roll button avaliable (at least it should)
-            # playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
 
+    # Use get out of jail card if you have one
     if playerList[prisoner].getOutOfJailCards > 0:
         if cardButton.draw(screen):
             playerList[prisoner].isInJail = False
             playerList[prisoner].getOutOfJailCards -= 1
             playerList[prisoner].setJailChoiceMade(True)
-            # playerList[prisoner].move(board, playerList, screen, font, TEXT_COL)
 
 
-# HENRY'S PART
 # Purpose: To choose the piece for each player
 def choosePieces(
     screen: pygame.surface.Surface, playerList: list[player.Player]
@@ -366,7 +360,7 @@ def choosePieces(
         batcarButton: Button = Button(550, 500, batcar, (100, 100))
         batButton: Button = Button(750, 500, bat, (100, 100))
         buttons: list[Button] = [gauntletButton, capeButton, batcarButton, batButton]
-
+        
         for i in range(len(PIECE_IMAGES)):
             if availablePieces[i]:
                 if buttons[i].draw(screen):
@@ -440,9 +434,6 @@ def main():
 
     # size of main_surface
     width, height = main_surface.get_height(), main_surface.get_width()
-    print("area", area)
-    print("Height " + str(height))
-    print("Width " + str(width))
 
     gameRunning: bool = True
 
@@ -465,7 +456,7 @@ def main():
     # Get player counts
     numAIPlayers = choosePlayers(screen, "AI", maxPlayers)
     if numAIPlayers < maxPlayers:
-        time.sleep(.1)  # Just a little bit of delay to ensure we don't clicks registering double
+        time.sleep(.1)  # Just a little bit of delay to ensure our clicks aren't registering double
         numHumPlayers = choosePlayers(screen, "Human", maxPlayers - numAIPlayers)
 
     numPlayers = numAIPlayers + numHumPlayers
@@ -495,16 +486,20 @@ def main():
     jailButton: Button = Button(width / 2, height / 5, jailImage, (200, 50))
 
     # Main loop (This is the actual game part):
+    numBankrupt: int = 0  # How many players are currently bankrupt
     while gameRunning:
-        numBankrupt: int = 0  # How many players are currently bankrupt
-
         for i in range(len(playerList)):
-            if playerList[i].getIsBankrupt() == True:
-                numBankrupt += 1
             playerList[i].isPayed = False
 
         if numBankrupt < numPlayers - 1:  # End the game if all but one player is bankrupt
+            numBankrupt = 0
             for i in range(len(playerList)):  # For each player
+                if playerList[i].getIsBankrupt():
+                    numBankrupt += 1
+                
+                if numBankrupt >= numPlayers - 1:  # If the game is over skip the rest of the turns in this cycle
+                    break
+                
                 if playerList[
                     i
                 ].getIsBankrupt():  # If the player is bankrupt, skip their turn
@@ -602,12 +597,13 @@ def main():
 
                                 # Until player makes a choice
                                 if not decisionMade:
-                                    if yesButton.draw(screen):
-                                        decisionMade = True
-                                        purchaseProperty = True
+                                    if playerList[i].money > board[playerList[i].location].getCost(): # Only draw the yes button the property can be afforded
+                                        if yesButton.draw(screen):
+                                            decisionMade = True
+                                            purchaseProperty = True
 
                                     # Player does not buy property, the screen closes.
-                                    elif noButton.draw(screen):
+                                    if noButton.draw(screen):
                                         decisionMade = True
                                         purchaseProperty = False
 
@@ -641,123 +637,65 @@ def main():
                             )
 
                         # Popup for when a player lands on Chance
-                        elif playerList[i].getAcknowledgingChance() == True:
-                            if (
-                                not playerList[i].getIsAI()
-                                and isinstance(
-                                    board[playerList[i].location], tile.Chance
-                                )
-                            ):
-                                # chanceCloseSurface: pygame.surface.Surface = (
-                                #     pygame.image.load("Images/closeButton.png")
-                                # )
-                                # chanceBGBox: pygame.surface.Surface = (
-                                #     pygame.image.load("Images/textbox.png")
-                                # )
-
-                                # screen.blit(
-                                #     pygame.transform.scale(chanceBGBox, (715, 400)),
-                                #     (width / 7, height / 4.5),
-                                # )
+                        elif playerList[i].getAcknowledgingChance():
+                            if not playerList[i].getIsAI():
 
                                 flavorText = playerList[i].getFlavorText()
                                 cardAmount = playerList[i].getCardAmount()
-                                get_acknowledgement(screen, f"You landed on Chance\n{flavorText}\nAmount: {cardAmount}", playerList[i], 'Chance')
-                                # text = f"You landed on Chance\n{flavorText}\nAmount: {cardAmount}"
-
-                                # draw_text(
-                                #     screen,
-                                #     "You landed on Chance",
-                                #     font,
-                                #     PLAYER_COLS[i],
-                                #     250,
-                                #     250,
-                                # )
-
-                                # # draw_text(
-                                # #     screen,
-                                # #     f"{flavorText}",
-                                    
-                                # # )
-
-                                # chanceCloseButton: Button = Button(
-                                #     390, 450, chanceCloseSurface, (636, 136)
-                                # )
-
-                                # if chanceCloseButton.draw(screen):
-                                #     playerList[i].setAcknowledgingChance(False)
+                                if (isinstance(cardAmount, MoveEnum)):  # Don't show an amount if the card type doesn't have one 
+                                    get_acknowledgement(
+                                        screen,
+                                        f"You landed on Chance\n{flavorText}",
+                                        playerList[i],
+                                        "Chance"
+                                    )
+                                else:
+                                    get_acknowledgement(
+                                        screen,
+                                        f"You landed on Chance\n{flavorText}\nAmount: {cardAmount}",
+                                        playerList[i],
+                                        "Chance",
+                                    )
+                        elif playerList[i].getAcknowledgingCommunity():
+                            if not playerList[i].getIsAI():
+                                flavorText = playerList[i].getFlavorText()
+                                cardAmount = playerList[i].getCardAmount()
+                                if (isinstance(cardAmount, MoveEnum)):  # Don't show an amount if the card type doesn't have one 
+                                    get_acknowledgement(
+                                        screen,
+                                        f"You landed on Community\nChest\n{flavorText}",
+                                        playerList[i],
+                                        "Chance"
+                                    )
+                                else:
+                                    get_acknowledgement(
+                                        screen,
+                                        f"You landed on Community\n Chest\n{flavorText}\nAmount: {cardAmount}",
+                                        playerList[i],
+                                        "Community",
+                                    )
 
                         # Popup for when a player pays a tax
                         elif playerList[i].getAcknowledgingTax() == True:
                             # If a human player landed on the Income Tax tile.
                             if (
                                 not playerList[i].getIsAI()
-                                and isinstance(
-                                    board[playerList[i].location], tile.IncomeTax
-                                )
                             ):
-                                incomeCloseSurface: pygame.surface.Surface = (
-                                    pygame.image.load("Images/closeButton.png")
-                                )
-                                incomeTaxBGBox: pygame.surface.Surface = (
-                                    pygame.image.load("Images/textbox.png")
-                                )
-
-                                screen.blit(
-                                    pygame.transform.scale(incomeTaxBGBox, (715, 400)),
-                                    (width / 7, height / 4.5),
-                                )
-
-                                draw_text(
+                                get_acknowledgement(
                                     screen,
                                     "You landed on the\nIncome Tax Space,\nyou had to pay $200.",
-                                    font,
-                                    PLAYER_COLS[i],
-                                    250,
-                                    250,
+                                    playerList[i],
+                                    "Income",
                                 )
-
-                                incomeCloseButton: Button = Button(
-                                    390, 450, incomeCloseSurface, (636, 136)
-                                )
-
-                                if incomeCloseButton.draw(screen):
-                                    playerList[i].setAcknowledgingTax(False)
 
                             # If a human player landed on the Luxury Tax tile.
-                            elif (
-                                 not playerList[i].getIsAI()
-                                and isinstance(
-                                    board[playerList[i].location], tile.LuxuryTax
-                                )
-                            ):
-                                luxryCloseButton: pygame.surface.Surface = (
-                                    pygame.image.load("Images/closeButton.png")
-                                )
-                                luxuryTaxBGBox: pygame.surface.Surface = (
-                                    pygame.image.load("Images/textbox.png")
-                                )
-
-                                screen.blit(
-                                    pygame.transform.scale(luxuryTaxBGBox, (715, 400)),
-                                    (width / 7, height / 4.5),
-                                )
-
-                                draw_text(
+                            elif not playerList[i].getIsAI():
+                                get_acknowledgement(
                                     screen,
                                     "You landed on the\nLuxury Tax Space,\nyou had to pay $100.",
-                                    font,
-                                    PLAYER_COLS[i],
-                                    250,
-                                    250,
+                                    playerList[i],
+                                    "Luxury",
                                 )
-
-                                luxuryCloseButton: Button = Button(
-                                    390, 450, luxryCloseButton, (636, 136)
-                                )
-
-                                if luxuryCloseButton.draw(screen):
-                                    playerList[i].setAcknowledgingTax(False)
 
                         else:
                             # Rolling
@@ -775,7 +713,7 @@ def main():
                             elif (
                                 playerList[i].getIsAI() == True
                             ):  # If the player is AI, have them roll until they can't and end thier turn
-                                playerList[i].move(board, playerList, screen, font, PLAYER_COLS[i])                                
+                                playerList[i].move(board, playerList)                                
                                 if (
                                     playerList[i].getIsRollingDone() == True
                                 ):  # This means that an AI player will always roll again if they get doubles

@@ -1,22 +1,24 @@
 import tile
 import random
 from typing import List
-from datetime import datetime
+from dataclasses import dataclass
 
 import pygame
 from draw import draw_text
 
-random.seed(datetime.now().timestamp())
-
 jailIndex = 10
+
+@dataclass
+class flavor:
+    text: str
+    amount: int
 
 class Player:
     def __init__(self, pieceIn: int, AI: bool):
         self.money: int = 1500  # The amount of money the player currently has
         self.properties: list[tile.Property] = []  # properties play owns
         self.location: int = 0  # Index value for the tile the player is currently
-        #TODO: give them zero get out of jail free cards
-        self.getOutOfJailCards: int = 1  # The number of get out of jail free cards the player currently has
+        self.getOutOfJailCards: int = 0  # The number of get out of jail free cards the player currently has
         self.turnsInJail: int = 0;  # Turns in jail, players automatically get out after three turns
         self.isInJail: bool = False  # Is the player currently in jail
         self.isRollingDone: bool = False  # Set to true once the player can no longer roll during thier current turn
@@ -75,7 +77,7 @@ class Player:
         diceOne: int = random.randint(1, 6)
         diceTwo: int = random.randint(1, 6)
         self.lastRoll: tuple[int, int] = [diceOne, diceTwo]  # Needed to display the correct dice elsewhere
-        return [5, 2]
+        return [1, 1]  # Very important NOTE: Don't forget to remove this line
         return [diceOne, diceTwo]
 
     # Does player movment, rolls dice, then moves to requisite number of spaces
@@ -89,8 +91,6 @@ class Player:
 
         # Rolling has a completly diffrent context in jail, hanled in escapeJail()
         if self.isInJail:
-            # TODO Once we have pygame figured out, we need an option to pay $50 to leave jail early
-            # TODO If a player has a get out of jail free card, they can use it to get out of jail
             self.escapeJail(dice)
             return  # End movement
 
@@ -126,14 +126,23 @@ class Player:
         if isinstance(board[self.location], tile.Property):
             effect: str = board[self.location].landedOn(self.piece)
         elif isinstance(board[self.location], tile.Chance):
-            self.acknowledgingChance = True
-            effect: str = board[self.location].landedOn(self.flavorText, self.cardAmount)
+            if not self.isAI:
+                self.acknowledgingChance = True
+            flavorInfo: flavor = flavor("", 0)
+            effect: str = board[self.location].landedOn(flavorInfo)
+            self.flavorText = flavorInfo.text
+            self.cardAmount = flavorInfo.amount
         elif isinstance(board[self.location], tile.CommunityChest):
-            self.acknowledgingCommunity = True
-            effect: str = board[self.location].landedOn(self.flavorText, self.cardAmount)
+            if not self.isAI:
+                self.acknowledgingCommunity = True
+            flavorInfo: flavor = flavor("", 0)
+            effect: str = board[self.location].landedOn(flavorInfo)
+            self.flavorText = flavorInfo.text
+            self.cardAmount = flavorInfo.amount
         else:
             if isinstance(board[self.location], tile.IncomeTax) or isinstance(board[self.location], tile.LuxuryTax):
-                self.acknowledgingTax = True
+                if not self.isAI:
+                    self.acknowledgingTax = True
 
             effect: str = board[self.location].landedOn()
 

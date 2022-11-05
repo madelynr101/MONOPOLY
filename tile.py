@@ -124,13 +124,17 @@ class Chance(Tile):
     def __init__(self, index: int) -> None:
         super().__init__(index)
 
-    def landedOn(self, text, amount) -> str:
+    def landedOn(self, flavorInfo) -> str:
         # Draw the card
         chaCard: card.ChanceCard = card.ChanceCard()
         effect: card.CardReturn = chaCard.getEffect()
 
-        text = effect.flavorText
+        flavorInfo.text = effect.flavorText
         amount = effect.randomAmount
+        flavorInfo.amount = amount
+
+        if amount == 11:
+            flavorInfo.amount = 1
 
         # self.displayCard(screen, text, amount)
 
@@ -162,15 +166,17 @@ class CommunityChest(Tile):
     def __init__(self, index: int) -> None:
         super().__init__(index)
 
-    def landedOn(self, text, amount) -> str:
+    def landedOn(self, flavorInfo) -> str:
         # Draw the card
         comCard: card.CommunityCard = card.CommunityCard()
         effect: card.CardReturn = comCard.getEffect()
 
-        text = effect.flavorText
+        flavorInfo.text = effect.flavorText
         amount = effect.randomAmount
+        flavorInfo.amount = amount
 
-        # self.displayCard(screen, text, amount)
+        if amount == 11:
+            flavorInfo.amount = 1
 
         # If the card effect is money based
         if isinstance(effect.requirement, cardTypes.MoneyFlavor):
@@ -193,20 +199,6 @@ class CommunityChest(Tile):
         # Get out of jail free card
         else:
             return "GetOutCard"
-
-    def displayCard(self, screen, text, amount):
-        dismissed = False
-        while not dismissed:
-            font = pygame.font.SysFont("arialblack", 40)
-            pygame.draw.rect(screen, (255, 255, 255), (300, 200, 400, 600))
-            draw_text(screen, "Chance", font, (0, 0, 0), 310, 210)
-            draw_text(screen, text, font, (0, 0, 0), 310, 240)
-            draw_text(screen, f"Amount: {amount}", font, (0, 0, 0), 310, 270)
-            dismissImage = pygame.image.load("Images/yes.png")
-            dismissButton = Button(310, 490, dismissImage, (380, 100))
-            if dismissButton.draw(screen):
-                dismissed = True
-            pygame.display.update()
 
 
 # Pay $200 when landed on
