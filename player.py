@@ -15,7 +15,8 @@ class Player:
         self.money: int = 1500  # The amount of money the player currently has
         self.properties: list[tile.Property] = []  # properties play owns
         self.location: int = 0  # Index value for the tile the player is currently
-        self.getOutOfJailCards: int = 0  # The number of get out of jail free cards the player currently has
+        #TODO: give them zero get out of jail free cards
+        self.getOutOfJailCards: int = 1  # The number of get out of jail free cards the player currently has
         self.turnsInJail: int = 0;  # Turns in jail, players automatically get out after three turns
         self.isInJail: bool = False  # Is the player currently in jail
         self.isRollingDone: bool = False  # Set to true once the player can no longer roll during thier current turn
@@ -27,6 +28,10 @@ class Player:
         self.choosingProperty: bool = False
         self.jailChoiceMade: bool = False
         self.acknowledgingTax: bool = False
+        self.acknowledgingChance: bool = False
+        self.acknowledgingCommunity: bool = False
+        self.flavorText: str = ""
+        self.cardAmount: int = 0
         self.isPaying: bool = False
         self.isPayed: bool = False
 
@@ -70,17 +75,14 @@ class Player:
         diceOne: int = random.randint(1, 6)
         diceTwo: int = random.randint(1, 6)
         self.lastRoll: tuple[int, int] = [diceOne, diceTwo]  # Needed to display the correct dice elsewhere
-
+        return [5, 2]
         return [diceOne, diceTwo]
 
     # Does player movment, rolls dice, then moves to requisite number of spaces
     def move(
         self,
         board: List[tile.Tile],
-        playerList,
-        screen: pygame.surface.Surface,
-        font: pygame.font.Font,
-        text_color: tuple[int, int, int],
+        playerList
     ) -> None:
         print(self.location)
         dice: tuple[int, int] = self.roll()
@@ -123,8 +125,12 @@ class Player:
         # Effects of space landed on
         if isinstance(board[self.location], tile.Property):
             effect: str = board[self.location].landedOn(self.piece)
-        elif isinstance(board[self.location], tile.Chance) or isinstance(board[self.location], tile.CommunityChest):
-            effect: str = board[self.location].landedOn(screen)
+        elif isinstance(board[self.location], tile.Chance):
+            self.acknowledgingChance = True
+            effect: str = board[self.location].landedOn(self.flavorText, self.cardAmount)
+        elif isinstance(board[self.location], tile.CommunityChest):
+            self.acknowledgingCommunity = True
+            effect: str = board[self.location].landedOn(self.flavorText, self.cardAmount)
         else:
             if isinstance(board[self.location], tile.IncomeTax) or isinstance(board[self.location], tile.LuxuryTax):
                 self.acknowledgingTax = True
@@ -192,7 +198,7 @@ class Player:
                 for _ in range(1, railroadAmt):
                     totalCost *= 2
 
-                # Can't affor rent, bankrupt
+                # Can't afford rent, bankrupt
                 if totalCost >= self.money:
                     playerList[board[instructionValue].getOwner()].money += self.money
                     self.money = 0
@@ -532,6 +538,30 @@ class Player:
 
     def setJailChoiceMade(self, value: bool) -> None:
         self.jailChoiceMade = value
+
+    def getAcknowledgingChance(self) -> bool:
+        return self.acknowledgingChance
+
+    def setAcknowledgingChance(self, value: bool) -> None:
+        self.acknowledgingChance = value
+
+    def getAcknowledgingCommunity(self) -> bool:
+        return self.acknowledgingCommunity
+
+    def setAcknowledgingCommunity(self, value: bool) -> None:
+        self.acknowledgingCommunity = value
+
+    def getFlavorText(self) -> str:
+        return self.flavorText
+
+    def setFlavorText(self, text: str) -> None:
+        self.flavorText = text
+    
+    def getCardAmount(self) -> int:
+        return self.cardAmount
+
+    def setCardAmount(self, amount: int) -> None:
+        self.cardAmount = amount
 
     def getAcknowledgingTax(self) -> bool:
         return self.acknowledgingTax

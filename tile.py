@@ -124,7 +124,7 @@ class Chance(Tile):
     def __init__(self, index: int) -> None:
         super().__init__(index)
 
-    def landedOn(self, screen) -> str:
+    def landedOn(self, text, amount) -> str:
         # Draw the card
         chaCard: card.ChanceCard = card.ChanceCard()
         effect: card.CardReturn = chaCard.getEffect()
@@ -156,28 +156,13 @@ class Chance(Tile):
         else:
             return "GetOutCard"
 
-    def displayCard(self, screen, text, amount):
-        dismissed = False
-        while not dismissed:
-            font = pygame.font.SysFont("arialblack", 40)
-            pygame.draw.rect(screen, (255, 255, 255), (300, 200, 400, 600))
-            draw_text(screen, "Community Chest", font, (0, 0, 0), 310, 210)
-            draw_text(screen, text, font, (0, 0, 0), 310, 240)
-            draw_text(screen, f"Amount: {amount}", font, (0, 0, 0), 310, 270)
-            dismissImage = pygame.image.load("Images/yes.png")
-            dismissButton = Button(310, 490, dismissImage, (380, 100))
-            if dismissButton.draw(screen):
-                dismissed = True
-
-            pygame.display.update()
-
 
 # Draw a community chest card when landed on, parsing of card effects handled in the player class
 class CommunityChest(Tile):
     def __init__(self, index: int) -> None:
         super().__init__(index)
 
-    def landedOn(self, screen) -> str:
+    def landedOn(self, text, amount) -> str:
         # Draw the card
         comCard: card.CommunityCard = card.CommunityCard()
         effect: card.CardReturn = comCard.getEffect()
