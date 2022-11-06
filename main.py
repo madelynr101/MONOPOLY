@@ -1,9 +1,9 @@
-from turtle import width
+# from turtle import width
 import pygame
 from sys import exit
 from draw import Button, draw_text
 import time
-from cardTypes import *
+from cardTypes import ConsumableCards
 import random
 from datetime import datetime
 
@@ -301,6 +301,8 @@ def get_acknowledgement(
             playerPaying.acknowledgingCommunity = False
         elif acknowledgementType == "Luxury" or acknowledgementType == "Income":
             playerPaying.acknowledgingTax = False
+        elif acknowledgementType == 'GoToJail':
+            playerPaying.acknowledgingJail = False
 
 
 # Purpose: Show when someone gets sent to jail, chose to attempt a roll or pay $50 to get out
@@ -405,43 +407,43 @@ def load_tiles(board: list[tile.Tile]) -> None:
         tile.Property(1, 60, 2, "Brown")
     )  # Syntax is: (tile index, buy price, rent price, space color)
     board.append(tile.CommunityChest(2))
-    board.append(tile.Property(3, 60, 4, "Brown"))
+    board.append(tile.Property(3, 60, 40, "Brown"))  # High rent values so the game doesn't take forever without houses and hotels
     board.append(tile.IncomeTax(4))
-    board.append(tile.Property(5, 200, 25, "Railroad"))
-    board.append(tile.Property(6, 100, 6, "Cyan"))
+    board.append(tile.Property(5, 200, 250, "Railroad"))
+    board.append(tile.Property(6, 100, 60, "Cyan"))
     board.append(tile.Chance(7))
-    board.append(tile.Property(8, 100, 6, "Cyan"))
-    board.append(tile.Property(9, 120, 8, "Cyan"))
+    board.append(tile.Property(8, 100, 60, "Cyan"))
+    board.append(tile.Property(9, 120, 80, "Cyan"))
     board.append(tile.Jail(10))
-    board.append(tile.Property(11, 140, 10, "Purple"))
-    board.append(tile.Property(12, 150, 4, "Utility"))
-    board.append(tile.Property(13, 140, 10, "Purple"))
-    board.append(tile.Property(14, 160, 12, "Purple"))
-    board.append(tile.Property(15, 200, 25, "Railroad"))
-    board.append(tile.Property(16, 180, 14, "Orange"))
+    board.append(tile.Property(11, 140, 100, "Purple"))
+    board.append(tile.Property(12, 150, 40, "Utility"))
+    board.append(tile.Property(13, 140, 100, "Purple"))
+    board.append(tile.Property(14, 160, 120, "Purple"))
+    board.append(tile.Property(15, 200, 250, "Railroad"))
+    board.append(tile.Property(16, 180, 140, "Orange"))
     board.append(tile.CommunityChest(17))
-    board.append(tile.Property(18, 180, 14, "Orange"))
-    board.append(tile.Property(19, 200, 16, "Orange"))
+    board.append(tile.Property(18, 180, 140, "Orange"))
+    board.append(tile.Property(19, 200, 160, "Orange"))
     board.append(tile.FreeParking(20))
-    board.append(tile.Property(21, 220, 18, "Red"))
+    board.append(tile.Property(21, 220, 180, "Red"))
     board.append(tile.Chance(22))
-    board.append(tile.Property(23, 220, 18, "Red"))
-    board.append(tile.Property(24, 240, 20, "Red"))
-    board.append(tile.Property(25, 200, 25, "Railroad"))
-    board.append(tile.Property(26, 260, 22, "Yellow"))
-    board.append(tile.Property(27, 260, 22, "Yellow"))
-    board.append(tile.Property(28, 150, 4, "Utility"))
-    board.append(tile.Property(29, 280, 24, "Yellow"))
+    board.append(tile.Property(23, 220, 180, "Red"))
+    board.append(tile.Property(24, 240, 200, "Red"))
+    board.append(tile.Property(25, 200, 250, "Railroad"))
+    board.append(tile.Property(26, 260, 220, "Yellow"))
+    board.append(tile.Property(27, 260, 220, "Yellow"))
+    board.append(tile.Property(28, 150, 40, "Utility"))
+    board.append(tile.Property(29, 280, 240, "Yellow"))
     board.append(tile.GoToJail(30))
-    board.append(tile.Property(31, 300, 26, "Green"))
-    board.append(tile.Property(32, 300, 26, "Green"))
+    board.append(tile.Property(31, 300, 260, "Green"))
+    board.append(tile.Property(32, 300, 260, "Green"))
     board.append(tile.CommunityChest(33))
-    board.append(tile.Property(34, 320, 28, "Green"))
-    board.append(tile.Property(35, 200, 25, "Railroad"))
+    board.append(tile.Property(34, 320, 280, "Green"))
+    board.append(tile.Property(35, 200, 250, "Railroad"))
     board.append(tile.Chance(36))
-    board.append(tile.Property(37, 350, 35, "Navy"))
+    board.append(tile.Property(37, 350, 350, "Navy"))
     board.append(tile.LuxuryTax(38))
-    board.append(tile.Property(39, 400, 50, "Navy"))
+    board.append(tile.Property(39, 400, 500, "Navy"))
 
 
 def main():
@@ -505,10 +507,6 @@ def main():
     rollImage: pygame.surface.Surface = pygame.image.load("Images/rollButton.png")
     rollButton: Button = Button(width / 2.75, height / 1.26, rollImage, (200, 50))
 
-    # NOTE: These are temp, delete them
-    jailImage: pygame.surface.Surface = pygame.image.load("Images/closeButton.png")
-    jailButton: Button = Button(width / 2, height / 5, jailImage, (200, 50))
-
     # Main loop (This is the actual game part):
     numBankrupt: int = 0  # How many players are currently bankrupt
     while gameRunning:
@@ -570,9 +568,10 @@ def main():
                         if (
                             playerList[i].getIsInJail()
                             and playerList[i].getJailChoiceMade() == False
+                            and playerList[i].getIsRollingDone() == False  # Don't display the jail popup the turn you get there
                         ):  # If the player is in jail and hasn't made a choice yet
                             if playerList[i].getIsAI() == True:
-                                playerList[i].AIJailDecision()
+                                playerList[i].AIJailDecision(board, playerList)
 
                             else:  # Display a regular players jail choices
                                 jail(screen, playerList, i, board)
@@ -721,6 +720,9 @@ def main():
                                         playerList[i],
                                         "Community",
                                     )
+                        elif playerList[i].acknowledgingJail:
+                            if not playerList[i].getIsAI():
+                                get_acknowledgement(screen, "You have been sent to jail", playerList[i], 'GoToJail')
 
                         # Popup for when a player pays a tax
                         elif playerList[i].getAcknowledgingTax():
@@ -768,23 +770,13 @@ def main():
                             ):  # These conditions mean player has rolled at least once this turn
                                 if (
                                     playerList[i].getIsInJail() == False
-                                ):  # NOTE: This is a temp condition for the jail button
+                                ):
                                     rollDisplay(
                                         screen,
                                         PLAYER_COLS[i],
                                         (width, height),
                                         playerList[i],
                                     )  # Displays the dice the player rolled
-
-                            # NOTE: Jail button is for testing, delete when done
-                            if jailButton.draw(screen):
-                                # playerList[i].toJail()
-
-                                # Let's try to make the jail button a bankrupt
-                                playerList[i].money = 0
-                                playerList[i].isBankrupt = True
-                                playerList[i].RemoveProperties()
-                                turnFinished = True
 
                             # If a human player lands on a property owened by someone else
                             if (
@@ -793,6 +785,7 @@ def main():
                                     board[playerList[i].location], tile.Property
                                 )
                                 and not playerList[i].isPayed
+                                and (playerList[i].isRollingDone or playerList[i].doubleRolls > 0)  # Don't display rent popup at start of turn
                             ):
                                 if (
                                     board[playerList[i].location].getOwner() != None

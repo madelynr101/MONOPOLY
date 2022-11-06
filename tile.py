@@ -89,7 +89,7 @@ class Go(Tile):
         super().__init__(index)
 
     def landedOn(self) -> str:
-        return "Move:0"
+        return "ToGo"
 
 
 # Quite literally, does nothing.
@@ -98,7 +98,7 @@ class FreeParking(Tile):
         super().__init__(index)
 
     def landedOn(self) -> str:  # Blank string means doing nothing
-        return "Move:20"  # 20 is the index of the jail
+        return "ToFreeParking"  # 20 is the index of the jail
 
 
 # Sends the player to jail
@@ -213,16 +213,3 @@ class LuxuryTax(Tile):
     # Player pays $100
     def landedOn(self) -> str:
         return "Charge:100"
-
-
-# NOTE: I have no clue what (or if) this is used for
-def tileTest() -> None:
-    for _ in range(10):
-        chanceTile: Chance = Chance(0)
-        communityTile: CommunityChest = CommunityChest(1)
-
-        print(f"{chanceTile.landedOn()=}, {communityTile.landedOn()=}")
-
-
-if __name__ == "__main__":
-    tileTest()

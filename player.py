@@ -2,7 +2,7 @@ import tile
 import random
 from typing import List, Union
 from dataclasses import dataclass
-from cardTypes import *
+from cardTypes import MoveEnum, ConsumableCards
 
 import pygame
 from draw import draw_text
@@ -44,6 +44,7 @@ class Player:
         self.cardAmount: Union[int, MoveEnum, ConsumableCards] = 0
         self.isPaying: bool = False
         self.isPayed: bool = False
+        self.acknowledgingJail: bool = False
 
     # Test function to print all the properties a player owns
     def getProperties(self) -> str:
@@ -90,7 +91,7 @@ class Player:
             diceOne,
             diceTwo,
         ]  # Needed to display the correct dice elsewhere
-        # return [1, 3]  # Very important NOTE: Don't forget to remove this line
+        # return [6, 4]  # Very important NOTE: Don't forget to remove this line
         return [diceOne, diceTwo]
 
     # Does player movment, rolls dice, then moves to requisite number of spaces
@@ -148,6 +149,10 @@ class Player:
             effect: str = board[self.location].landedOn(flavorInfo)
             self.flavorText = flavorInfo.text
             self.cardAmount = flavorInfo.amount
+        elif isinstance(board[self.location], tile.GoToJail):
+            if not self.isAI:
+                self.acknowledgingJail = True
+            effect: str = board[self.location].landedOn()
         else:
             if isinstance(board[self.location], tile.IncomeTax) or isinstance(
                 board[self.location], tile.LuxuryTax
@@ -408,22 +413,26 @@ class Player:
             player_position[1],
         )
 
-    def AIJailDecision(self) -> None:
+    # What the AI does when it's in jail
+    def AIJailDecision(self, board: list[tile.Tile], playerList) -> None:
         self.jailChoiceMade = True
 
+        # Use a card if it has one
         if self.getOutOfJailCards > 0:
             self.getOutOfJailCards -= 1
             self.isInJail = False
-            self.move()
+            self.move(board, playerList)
 
+        # Pay to get out and if they can
         elif self.money > 50:
             self.bankTransaction(-50)
             self.isInJail = False
             self.turnsInJail = 0
-            self.move()
+            self.move(board, playerList)
 
+        # Roll to get out if no other option
         else:
-            self.move()
+            self.move(board, playerList)
 
     # Purpose: To display player name, properties, money, etc.
     def displayProperties(
