@@ -1,29 +1,37 @@
 import tile
 import random
-from typing import List
+from typing import List, Union
 from dataclasses import dataclass
+from cardTypes import *
 
 import pygame
 from draw import draw_text
 
 jailIndex = 10
 
+
 @dataclass
 class flavor:
     text: str
-    amount: int
+    amount: Union[int, MoveEnum, ConsumableCards]
+
 
 class Player:
     def __init__(self, pieceIn: int, AI: bool):
         self.money: int = 1500  # The amount of money the player currently has
         self.properties: list[tile.Property] = []  # properties play owns
         self.location: int = 0  # Index value for the tile the player is currently
-        self.getOutOfJailCards: int = 0  # The number of get out of jail free cards the player currently has
-        self.turnsInJail: int = 0;  # Turns in jail, players automatically get out after three turns
+        self.getOutOfJailCards: int = (
+            0  # The number of get out of jail free cards the player currently has
+        )
+        self.turnsInJail: int = 0
+        # Turns in jail, players automatically get out after three turns
         self.isInJail: bool = False  # Is the player currently in jail
         self.isRollingDone: bool = False  # Set to true once the player can no longer roll during thier current turn
         self.doubleRolls: int = 0  # Increases whenever the player rolls doubles, set back to zero when they don't
-        self.lastRoll: tuple[int, int] = []  # The values of the players last roll, used to draw the dice on screen
+        self.lastRoll: tuple[
+            int, int
+        ] = []  # The values of the players last roll, used to draw the dice on screen
         self.piece: int = pieceIn  # Index of the players piece
         self.isBankrupt: bool = False  # Is the player currently bankrupt
         self.isAI: bool = AI
@@ -33,7 +41,7 @@ class Player:
         self.acknowledgingChance: bool = False
         self.acknowledgingCommunity: bool = False
         self.flavorText: str = ""
-        self.cardAmount: int = 0
+        self.cardAmount: Union[int, MoveEnum, ConsumableCards] = 0
         self.isPaying: bool = False
         self.isPayed: bool = False
 
@@ -47,7 +55,9 @@ class Player:
 
     # Pay another player
     def pay(self, landedOn: tile.Property, playerList) -> None:
-        cost: int = landedOn.getRent()  # wherever we get cost, varies based on propery and houses / hotels
+        cost: int = (
+            landedOn.getRent()
+        )  # wherever we get cost, varies based on propery and houses / hotels
 
         # If player can afford the price
         if self.money >= cost:
@@ -76,17 +86,15 @@ class Player:
     def roll(self) -> tuple[int, int]:
         diceOne: int = random.randint(1, 6)
         diceTwo: int = random.randint(1, 6)
-        self.lastRoll: tuple[int, int] = [diceOne, diceTwo]  # Needed to display the correct dice elsewhere
-        return [1, 1]  # Very important NOTE: Don't forget to remove this line
+        self.lastRoll: tuple[int, int] = [
+            diceOne,
+            diceTwo,
+        ]  # Needed to display the correct dice elsewhere
+        # return [1, 3]  # Very important NOTE: Don't forget to remove this line
         return [diceOne, diceTwo]
 
     # Does player movment, rolls dice, then moves to requisite number of spaces
-    def move(
-        self,
-        board: List[tile.Tile],
-        playerList
-    ) -> None:
-        print(self.location)
+    def move(self, board: List[tile.Tile], playerList) -> None:
         dice: tuple[int, int] = self.roll()
 
         # Rolling has a completly diffrent context in jail, hanled in escapeJail()
@@ -108,16 +116,17 @@ class Player:
             self.isRollingDone = True
             self.doubleRolls = 0
             self.toJail()
-            return # end movment
+            return  # end movment
 
-        distance: int = dice[0] + dice[1]  # This is the number of spaces we are gonna move
+        distance: int = (
+            dice[0] + dice[1]
+        )  # This is the number of spaces we are gonna move
         moved: int = 0  # How many spaces we have moved
 
         # The actual movment
         while moved < distance:
             self.location = self.location + 1
             if self.location >= len(board):  # $200 for passing go
-                print(f"Player {self.piece} passed Go!")
                 self.location = 0
                 self.bankTransaction(200)
             moved += 1
@@ -140,14 +149,15 @@ class Player:
             self.flavorText = flavorInfo.text
             self.cardAmount = flavorInfo.amount
         else:
-            if isinstance(board[self.location], tile.IncomeTax) or isinstance(board[self.location], tile.LuxuryTax):
+            if isinstance(board[self.location], tile.IncomeTax) or isinstance(
+                board[self.location], tile.LuxuryTax
+            ):
                 if not self.isAI:
                     self.acknowledgingTax = True
 
             effect: str = board[self.location].landedOn()
 
         self.landOnParse(effect, board, playerList)
-
 
     # Spaces return a formated string regarding what they do, this function parses those strings and preforms the desired action
     # Strings are of the format 'Action:Value'
@@ -160,9 +170,10 @@ class Player:
         playerList,
     ) -> None:
         instructions = effect.split(":")
-        print(f"{effect=}")
 
-        if len(instructions) > 1:  # If there is an integer value, store it in instructionValue
+        if (
+            len(instructions) > 1
+        ):  # If there is an integer value, store it in instructionValue
             instructionValue: int = int(
                 instructions[1]
             )  # This value will either be a dollar amount or a tile index depending on the contex
@@ -196,7 +207,9 @@ class Player:
 
             # Special case for paying rent for railroads
             case "PayRailroad":
-                totalCost = board[instructionValue].getRent()  # instructionValue is a tile index here
+                totalCost = board[
+                    instructionValue
+                ].getRent()  # instructionValue is a tile index here
                 railroadAmt = 0  # Number of railroads player owned
 
                 for prop in playerList[board[instructionValue].getOwner()].properties:
@@ -225,7 +238,7 @@ class Player:
 
                 # If the same player ownes both utilities
                 if board[12].getOwner() == board[28].getOwner():
-                    amountDue = (self.lastRoll[0] + self.lastRoll[1]) *  10
+                    amountDue = (self.lastRoll[0] + self.lastRoll[1]) * 10
 
                 # Player only owns one utility
                 else:
@@ -233,7 +246,9 @@ class Player:
 
                 # Can't afford rent, bankrupt
                 if amountDue >= self.money:
-                    playerList[board[instructionValue].getOwner()].money += self.money  # Give player all we have left
+                    playerList[
+                        board[instructionValue].getOwner()
+                    ].money += self.money  # Give player all we have left
                     self.money = 0
                     self.isBankrupt = True
                     self.RemoveProperties()  # All owned properties return to the bank
@@ -263,7 +278,9 @@ class Player:
                 if not self.isAI:  # Players can chose wheather to buy property or not
                     self.choosingProperty = True
                 else:  # This is what the AI does, always buy if you have the money
-                    if board[instructionValue].getCost() < self.money:  # Force buy property if AI can afford it
+                    if (
+                        board[instructionValue].getCost() < self.money
+                    ):  # Force buy property if AI can afford it
                         self.money -= board[instructionValue].getCost()
                         self.properties.append(board[instructionValue])
                         board[instructionValue].setOwner(self.piece)
@@ -287,6 +304,14 @@ class Player:
             case "ToJail":
                 self.toJail()
 
+            # Go to Go without collecting $200 dollars
+            case "ToGo":
+                self.location = 0
+
+            # Go to Free Parking
+            case "ToFreeParking":
+                self.location = 20
+
             # Card effect: recieve a get out of jail free card
             case "GetOutCard":
                 self.getOutOfJailCards += 1
@@ -305,13 +330,15 @@ class Player:
             # Card effect: move all players some number of spaces
             case "MoveAll":
                 for player in playerList:
-                    if instructionValue < 0:  # Move backwards (no money from passing go)
+                    if (
+                        instructionValue < 0
+                    ):  # Move backwards (no money from passing go)
                         for i in range(-instructionValue):
                             player.location -= 1
                             if player.location < 0:  # Loop back to end of board
                                 player.location = len(board) - 1
 
-                    else:   # Move forwards
+                    else:  # Move forwards
                         for i in range(instructionValue):
                             player.location += 1
                             if player.location >= len(board):  # $200 for passing go
@@ -326,7 +353,9 @@ class Player:
 
         self.turnsInJail += 1  # Increment at the end of each turn in jail
 
-        if self.turnsInJail > 3:  # Automatically leave jail after third turn if you are still in
+        if (
+            self.turnsInJail > 3
+        ):  # Automatically leave jail after third turn if you are still in
             self.isInJail = False
             self.turnsInJail = 0
 
@@ -382,12 +411,12 @@ class Player:
     def AIJailDecision(self) -> None:
         self.jailChoiceMade = True
 
-        if(self.getOutOfJailCards > 0):
+        if self.getOutOfJailCards > 0:
             self.getOutOfJailCards -= 1
             self.isInJail = False
             self.move()
 
-        elif(self.money > 50):
+        elif self.money > 50:
             self.bankTransaction(-50)
             self.isInJail = False
             self.turnsInJail = 0
@@ -565,8 +594,8 @@ class Player:
 
     def setFlavorText(self, text: str) -> None:
         self.flavorText = text
-    
-    def getCardAmount(self) -> int:
+
+    def getCardAmount(self) -> Union[int, MoveEnum, ConsumableCards]:
         return self.cardAmount
 
     def setCardAmount(self, amount: int) -> None:

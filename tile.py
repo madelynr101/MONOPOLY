@@ -133,9 +133,6 @@ class Chance(Tile):
         amount = effect.randomAmount
         flavorInfo.amount = amount
 
-        if amount == 11:
-            flavorInfo.amount = 1
-
         # self.displayCard(screen, text, amount)
 
         # If the card effect is money based
@@ -175,9 +172,6 @@ class CommunityChest(Tile):
         amount = effect.randomAmount
         flavorInfo.amount = amount
 
-        if amount == 11:
-            flavorInfo.amount = 1
-
         # If the card effect is money based
         if isinstance(effect.requirement, cardTypes.MoneyFlavor):
             match effect.requirement.transfer:
@@ -192,9 +186,9 @@ class CommunityChest(Tile):
                 case "toRailroad":
                     return "ToRailroad"
                 case "backToGo":
-                    return f"Move:0"
+                    return f"ToGo"
                 case "freeParking":
-                    return f"Move:20"
+                    return f"ToFreeParking"
 
         # Get out of jail free card
         else:
