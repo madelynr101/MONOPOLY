@@ -24,7 +24,7 @@
             }
         },
         {
-            "text": "All to jail",
+            "text": "Go to jail",
             "effect": {
                 "type": "movement",
                 "direction": "toJail",
