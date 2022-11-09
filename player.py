@@ -187,7 +187,7 @@ class Player:
             # You give the bank money
             case "Charge":
                 self.bankTransaction(
-                    -instructionValue
+                    instructionValue
                 )  # instructionValue is a dollar amount
 
             # All other players give you money
@@ -273,7 +273,7 @@ class Player:
 
                         # Player can't afford, bankrupt
                         else:
-                            self.money <= 0
+                            self.money = 0
                             self.isBankrupt = True
                             self.RemoveProperties()  # All owned properties return to the bank
                             break
