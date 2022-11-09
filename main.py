@@ -510,6 +510,7 @@ def main():
     # Main loop (This is the actual game part):
     numBankrupt: int = 0  # How many players are currently bankrupt
     while gameRunning:
+        
         for i in range(len(playerList)):
             playerList[i].isPayed = False
 
@@ -517,17 +518,18 @@ def main():
             numBankrupt < numPlayers - 1
         ):  # End the game if all but one player is bankrupt
             numBankrupt = 0
-            for i in range(len(playerList)):  # For each player
-                for play in playerList:
-                    if play.isBankrupt:
+            for play in playerList:
+                    if play.getIsBankrupt():
                         numBankrupt += 1
+            for i in range(len(playerList)):  # For each player
+                
 
                 if numBankrupt >= numPlayers - 1:
                     break
 
                 if playerList[
                     i
-                ].isBankrupt:  # If the player is bankrupt, skip their turn
+                ].getIsBankrupt():  # If the player is bankrupt, skip their turn
                     continue
 
                 else:  # Normal turn
